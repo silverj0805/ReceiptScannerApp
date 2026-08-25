@@ -5,12 +5,9 @@
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import NativeReceiptScanner from './specs/NativeReceiptScanner';
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -24,14 +21,11 @@ function App() {
 }
 
 function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+  const result = NativeReceiptScanner.multiply(3, 7);
 
   return (
     <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
+      <Text>Result: {result}</Text>
     </View>
   );
 }
@@ -39,6 +33,8 @@ function AppContent() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
