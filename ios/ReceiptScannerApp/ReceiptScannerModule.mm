@@ -37,6 +37,19 @@ NS_ASSUME_NONNULL_END
   return [_calculator multiplyWithA:a b:b];
 }
 
+- (void)scanText:(NSString *)imageUri
+         resolve:(RCTPromiseResolveBlock)resolve
+          reject:(RCTPromiseRejectBlock)reject
+{
+  [_calculator scanTextWithImageUri:imageUri
+                             resolve:^(NSString *text) {
+    resolve(text);
+  }
+                              reject:^(NSString *code, NSString *message, NSError * _Nullable error) {
+    reject(code, message, error);
+  }];
+}
+
 + (NSString *)moduleName
 {
   return @"ReceiptScanner";
