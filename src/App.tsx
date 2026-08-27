@@ -6,9 +6,18 @@
  */
 
 import { useState } from 'react';
-import { Button, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { Button, Image, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import NativeReceiptScanner from '../specs/NativeReceiptScanner';
+
+// require()는 정적 문자열만 허용돼서 미리 맵으로 준비해둠.
+// Image.resolveAssetSource(...)는 두 플랫폼 모두에서 scanText가 바로 쓸 수 있는
+// URI를 돌려줌 — Android의 android.resource://, iOS의 번들 리소스 접근을
+// 각 네이티브 코드가 알아서 처리해줄 필요 없이, RN의 표준 에셋 파이프라인 하나로 통일.
+const exampleReceipts: Record<string, number> = {
+  receipt1: require('./assets/examples/receipt1.jpeg'),
+  receipt2: require('./assets/examples/receipt2.jpeg'),
+};
 
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -27,9 +36,11 @@ function AppContent() {
 
   const scan = async (resourceName: string) => {
     try {
-      const text = await NativeReceiptScanner.scanText(
-        `android.resource://com.receiptscannerapp/raw/${resourceName}`,
-      );
+      const asset = Image.resolveAssetSource(exampleReceipts[resourceName]);
+      if (!asset) {
+        throw new Error(`Unknown example receipt: ${resourceName}`);
+      }
+      const text = await NativeReceiptScanner.scanText(asset.uri);
       setScanResult(text);
     } catch (e) {
       setScanResult(`ERROR: ${e}`);
