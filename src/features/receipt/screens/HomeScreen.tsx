@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import NativeReceiptScanner from '../../../../specs/NativeReceiptScanner';
+import { Box } from '../../../shared/ui/Box';
 
 // require()는 정적 문자열만 허용돼서 미리 맵으로 준비해둠.
 const exampleReceipts: Record<string, number> = {
@@ -29,13 +30,16 @@ export function HomeScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text>홈 화면 (placeholder)</Text>
-      <View style={styles.buttonRow}>
-        <Button title="Scan receipt1" onPress={() => scan('receipt1')} />
-        <Button title="Scan receipt2" onPress={() => scan('receipt2')} />
-      </View>
-      <Text style={styles.scanResult}>{scanResult}</Text>
+    <ScrollView className="bg-background" contentContainerStyle={styles.container}>
+      <Text className="text-primary">홈 화면 (placeholder)</Text>
+      {/* uniwind 공통 스타일 토큰(Box) 확인용 — 실제 UI는 홈 화면 태스크에서 교체 */}
+      <Box className="mt-4">
+        <View style={styles.buttonRow}>
+          <Button title="Scan receipt1" onPress={() => scan('receipt1')} />
+          <Button title="Scan receipt2" onPress={() => scan('receipt2')} />
+        </View>
+        <Text style={styles.scanResult}>{scanResult}</Text>
+      </Box>
     </ScrollView>
   );
 }

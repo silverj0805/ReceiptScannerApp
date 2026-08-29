@@ -23,6 +23,8 @@ module.exports = {
   // 항상 목(mock)으로 대체되도록 경로 끝부분만 매칭.
   moduleNameMapper: {
     'specs/NativeReceiptScanner$': '<rootDir>/__mocks__/NativeReceiptScanner.ts',
+    // Jest는 Metro의 CSS 파이프라인(uniwind)을 거치지 않으므로, .css import는 빈 모듈로 목 처리.
+    '\\.css$': '<rootDir>/__mocks__/styleMock.js',
   },
   // @react-native/jest-preset의 테스트 환경(react-native-env.js)이
   // customExportConditions를 ['require', 'react-native']로 통째로 덮어써서 기본값인
