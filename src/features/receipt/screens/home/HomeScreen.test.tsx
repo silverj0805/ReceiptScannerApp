@@ -1,32 +1,61 @@
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react-native';
 import { http, HttpResponse } from 'msw';
 
-import type { Receipt, ReceiptSummary } from '@/features/receipt/api/types';
+import type { Receipt } from '@/features/receipt/api/types/receipt';
+import type { ReceiptSummary } from '@/features/receipt/api/types/summary';
 import { server } from '@/mocks/server';
 
-import HomeScreen from './HomeScreen';
+import HomeScreen from './index';
 
-test('데이터 도착 전엔 로딩 상태를 보여준다', () => {
-  render(<HomeScreen />);
+const Stack = createNativeStackNavigator();
+const renderHomeScreen = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Home" component={HomeScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </QueryClientProvider>,
+  );
+};
+
+test('데이터 도착 전엔 로딩 상태를 보여준다', async () => {
+  await renderHomeScreen();
 
   // ActivityIndicator 등 텍스트 없는 로딩 UI를 쓸 수 있어서 텍스트 대신 testID로 확인.
   expect(screen.getByTestId('home-loading')).toBeTruthy();
+
+  // act(...)" 경고가 나는 걸 막기 위해, 단언이 끝난 뒤에도 완전히 로딩이 끝날 때까지 기다림.
+  await waitFor(() => {
+    expect(screen.queryByTestId('home-loading')).toBeNull();
+  });
 });
 
 test('데이터 도착 후 이번 달 지출 요약을 보여준다', async () => {
-  render(<HomeScreen />);
+  await renderHomeScreen();
 
   await waitFor(() => {
     expect(screen.getByText('₩842,300')).toBeTruthy();
     expect(screen.getByText('-12%')).toBeTruthy();
+    // list 쿼리도 같이 settle될 때까지 기다려서 act 경고를 막음.
+    expect(screen.getByText('스타벅스 강남점')).toBeTruthy();
   });
 });
 
 test('데이터 도착 후 최근 영수증 리스트를 보여준다', async () => {
-  render(<HomeScreen />);
+  await renderHomeScreen();
 
   await waitFor(() => {
     expect(screen.getByText('스타벅스 강남점')).toBeTruthy();
+    // summary 쿼리도 같이 settle될 때까지 기다려서 act 경고를 막음.
+    expect(screen.getByText('₩842,300')).toBeTruthy();
   });
 
   // 가맹점/한글 카테고리 라벨/날짜/금액이 각 영수증마다 정확히 렌더링되는지 확인.
@@ -51,8 +80,7 @@ test('데이터 도착 후 최근 영수증 리스트를 보여준다', async ()
 });
 
 test('영수증이 하나도 없으면 요약 금액/증감률을 0으로 보여준다', async () => {
-  // 이 테스트에서만 summary 응답을 빈 상태로 덮어씀(afterEach의 server.resetHandlers로
-  // 다음 테스트엔 영향 없음) — 기본 handlers.ts의 happy-path 픽스처는 그대로 둠.
+  // 이 테스트에서만 summary 응답을 빈 상태로 덮어씀
   const emptySummary: ReceiptSummary = {
     total: 0,
     deltaPercent: 0,
@@ -62,11 +90,13 @@ test('영수증이 하나도 없으면 요약 금액/증감률을 0으로 보여
     http.get('*/receipts/summary', () => HttpResponse.json(emptySummary)),
   );
 
-  render(<HomeScreen />);
+  await renderHomeScreen();
 
   await waitFor(() => {
     expect(screen.getByText('₩0')).toBeTruthy();
-    expect(screen.getByText('0%')).toBeTruthy();
+    expect(screen.queryByText('%')).toBeNull();
+    // list 쿼리도 같이 settle될 때까지 기다려서 act 경고를 막음.
+    expect(screen.getByText('스타벅스 강남점')).toBeTruthy();
   });
 });
 
@@ -74,9 +104,11 @@ test('영수증이 하나도 없으면 안내 문구를 보여준다', async () 
   const emptyReceipts: Receipt[] = [];
   server.use(http.get('*/receipts', () => HttpResponse.json(emptyReceipts)));
 
-  render(<HomeScreen />);
+  await renderHomeScreen();
 
   await waitFor(() => {
-    expect(screen.getByText('아직 기록된 영수증이 없어요')).toBeTruthy();
+    expect(screen.getByText('아직 기록된 영수증이 없어요.')).toBeTruthy();
+    // summary 쿼리도 같이 settle될 때까지 기다려서 act 경고를 막음.
+    expect(screen.getByText('₩842,300')).toBeTruthy();
   });
 });

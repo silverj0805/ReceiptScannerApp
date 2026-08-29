@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useResolveClassNames } from 'uniwind';
 
-import HomeScreen from '@/features/receipt/screens/HomeScreen';
+import HomeScreen from '@/features/receipt/screens/home';
 import ReceiptListScreen from '@/features/receipt/screens/ReceiptListScreen';
 import ScanScreen from '@/features/scan/screens/ScanScreen';
 
