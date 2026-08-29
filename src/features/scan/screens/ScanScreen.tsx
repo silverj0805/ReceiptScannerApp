@@ -4,7 +4,7 @@ import { Button, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { RootStackParamList } from '@/app/navigation/types';
-import Icon from '@/shared/ui/Icon';
+import Icon from '@/shared/components/ui/Icon';
 
 function ScanScreen() {
   const navigation =
