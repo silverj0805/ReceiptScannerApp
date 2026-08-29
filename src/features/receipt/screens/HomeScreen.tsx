@@ -1,37 +1,17 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import { useState } from 'react';
-import { Button, Image, ScrollView, StatusBar, StyleSheet, Text, useColorScheme, View } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import NativeReceiptScanner from '../specs/NativeReceiptScanner';
+import { Button, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import NativeReceiptScanner from '../../../../specs/NativeReceiptScanner';
 
 // require()는 정적 문자열만 허용돼서 미리 맵으로 준비해둠.
-// Image.resolveAssetSource(...)는 두 플랫폼 모두에서 scanText가 바로 쓸 수 있는
-// URI를 돌려줌 — Android의 android.resource://, iOS의 번들 리소스 접근을
-// 각 네이티브 코드가 알아서 처리해줄 필요 없이, RN의 표준 에셋 파이프라인 하나로 통일.
 const exampleReceipts: Record<string, number> = {
-  receipt1: require('./assets/examples/receipt1.jpeg'),
-  receipt2: require('./assets/examples/receipt2.jpeg'),
+  receipt1: require('../../../assets/examples/receipt1.jpeg'),
+  receipt2: require('../../../assets/examples/receipt2.jpeg'),
 };
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
-}
-
-function AppContent() {
-  const result = NativeReceiptScanner.multiply(3, 7);
+// placeholder — 실제 홈 대시보드 UI(이번 달 지출 요약 등)는 이 화면을 본격적으로
+// 만드는 태스크에서 채운다. scanText 네이티브 모듈 검증용으로 쓰던 버튼을 당분간
+// 여기 임시로 옮겨둠(그 태스크에서 정식 UI로 교체될 때 같이 정리 예정).
+export function HomeScreen() {
   const [scanResult, setScanResult] = useState('');
 
   const scan = async (resourceName: string) => {
@@ -49,7 +29,7 @@ function AppContent() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>홈 화면 (placeholder)</Text>
       <View style={styles.buttonRow}>
         <Button title="Scan receipt1" onPress={() => scan('receipt1')} />
         <Button title="Scan receipt2" onPress={() => scan('receipt2')} />
@@ -75,5 +55,3 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
 });
-
-export default App;

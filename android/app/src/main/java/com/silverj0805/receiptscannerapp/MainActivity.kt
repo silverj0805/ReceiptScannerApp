@@ -1,11 +1,20 @@
 package com.silverj0805.receiptscannerapp
 
+import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
+import com.swmansion.rnscreens.fragment.restoration.RNScreensFragmentFactory
 
 class MainActivity : ReactActivity() {
+
+  // react-native-screens 공식 가이드: Activity가 재시작될 때 화면(Fragment)의 View 상태가
+  // 유실되지 않도록, super.onCreate() 호출 전에 커스텀 FragmentFactory를 지정해야 함.
+  override fun onCreate(savedInstanceState: Bundle?) {
+    supportFragmentManager.fragmentFactory = RNScreensFragmentFactory()
+    super.onCreate(savedInstanceState)
+  }
 
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
