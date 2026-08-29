@@ -1,3 +1,4 @@
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { useState } from 'react';
 import { Button, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -31,6 +32,8 @@ export function HomeScreen() {
 
   return (
     <ScrollView className="bg-background" contentContainerStyle={styles.container}>
+      {/* Ionicons 폰트 링킹 확인용 — 실제 탭 아이콘 적용은 하단 탭 UI 고도화 태스크에서 진행 */}
+      <Ionicons name="home-outline" size={28} color="#1B5E43" />
       <Text className="text-primary">홈 화면 (placeholder)</Text>
       {/* uniwind 공통 스타일 토큰(Box) 확인용 — 실제 UI는 홈 화면 태스크에서 교체 */}
       <Box className="mt-4">
