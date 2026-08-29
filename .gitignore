@@ -76,3 +76,9 @@ yarn-error.log
 
 # example assets
 /src/assets/examples/*
+
+# react-native-config — 실제 값이 든 .env는 커밋하지 않는다.
+# env/.env.example만 추적해서 어떤 키가 필요한지 팀/미래의 나에게 남겨둔다.
+env/.env
+env/.env.*
+!env/.env.example

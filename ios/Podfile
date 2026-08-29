@@ -30,5 +30,20 @@ target 'ReceiptScannerApp' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # react-native-config: Xcode 빌드 설정(Debug/Release)에 따라 서로 다른 .env 파일을
+    # 읽도록 매핑. react-native-config 팟 자체의 빌드 타겟에 ENVFILE을 설정해야
+    # 그 팟의 script_phase(GeneratedDotEnv.m 생성)가 올바른 파일을 읽는다.
+    envfiles = {
+      'Debug' => './env/.env.development',
+      'Release' => './env/.env.production',
+    }
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'react-native-config'
+
+      target.build_configurations.each do |config|
+        config.build_settings['ENVFILE'] = envfiles[config.name]
+      end
+    end
   end
 end

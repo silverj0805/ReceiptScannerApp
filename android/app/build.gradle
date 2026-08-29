@@ -2,6 +2,14 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// react-native-config: Debug/Release 빌드 타입에 따라 다른 .env 파일을 읽어
+// BuildConfig 필드로 생성해준다. apply from 호출보다 반드시 앞에 있어야 함.
+project.ext.envConfigFiles = [
+    debug: "./env/.env.development",
+    release: "./env/.env.production",
+]
+apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
