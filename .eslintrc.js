@@ -14,6 +14,8 @@ module.exports = {
         project: path.resolve(__dirname, 'tsconfig.json'),
       },
     },
+    // 별칭(@/, @specs/)은 resolver 성공 여부와 무관하게 internal로 분류.
+    'import/internal-regex': '^@(?:/|specs/)',
   },
   rules: {
     // 실제로 존재하지 않는 모듈을 import하면 빌드/테스트 전에 lint 단계에서 바로 잡아냄
@@ -23,7 +25,7 @@ module.exports = {
       {
         groups: [
           'builtin',
-          'external',
+          ['external', 'unknown'],
           'internal',
           'parent',
           'sibling',
@@ -34,6 +36,7 @@ module.exports = {
           { pattern: '@specs/**', group: 'internal' },
         ],
         pathGroupsExcludedImportTypes: ['builtin'],
+        distinctGroup: false,
         'newlines-between': 'always',
         alphabetize: { order: 'asc', caseInsensitive: true },
       },

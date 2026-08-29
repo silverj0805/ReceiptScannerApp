@@ -1,0 +1,15 @@
+{
+  // uniwind는 Tailwind CSS v4 문법을 그대로 쓰는 라이브러리라, Tailwind CSS IntelliSense
+  // 확장(bradlc.vscode-tailwindcss)이 className 오토컴플리트를 그대로 제공해줌.
+  // 다만 uniwind는 style/color류 prop마다 자동으로 XClassName류 커스텀 prop을
+  // 만들어내서(withUniwind), 기본 className 외에 이 프로젝트에서 실제로 쓰는
+  // 이름들을 여기에 추가해줘야 그 prop 안에서도 자동완성이 뜸.
+  "tailwindCSS.classAttributes": [
+    "className",
+    "colorClassName",
+    "contentContainerClassName"
+  ],
+  // src/global.css가 @theme으로 primary/gray/black 같은 커스텀 토큰을 정의하고 있어서,
+  // 이 파일을 기준으로 삼아야 그 토큰들(text-primary 등)도 자동완성에 뜸.
+  "tailwindCSS.experimental.configFile": "src/global.css"
+}

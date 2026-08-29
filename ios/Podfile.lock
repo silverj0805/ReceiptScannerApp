@@ -1,6 +1,8 @@
 PODS:
   - boost (1.84.0):
     - ReactNativeDependencies
+  - BVLinearGradient (2.8.3):
+    - React-Core
   - DoubleConversion (1.1.6):
     - ReactNativeDependencies
   - fast_float (8.0.0):
@@ -1757,6 +1759,30 @@ PODS:
     - React-utils (= 0.87.0)
     - ReactNativeDependencies
   - ReactNativeDependencies (0.87.0)
+  - RNCMaskedView (0.3.2):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-bridging
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
+  - RNDeviceInfo (15.0.2):
+    - React-Core
   - RNFBApp (26.3.2):
     - Firebase/CoreOnly (= 12.18.0)
     - hermes-engine
@@ -1859,6 +1885,7 @@ PODS:
 
 DEPENDENCIES:
   - boost (from `build/rndeps-facades/boost`)
+  - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - DoubleConversion (from `build/rndeps-facades/DoubleConversion`)
   - fast_float (from `build/rndeps-facades/fast_float`)
   - FBLazyVector (from `build/rncore-facades/FBLazyVector`)
@@ -1945,6 +1972,8 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios/ReactCodegen`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDependencies (from `../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec`)
+  - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
+  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -1970,6 +1999,8 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   boost:
     :path: build/rndeps-facades/boost
+  BVLinearGradient:
+    :path: "../node_modules/react-native-linear-gradient"
   DoubleConversion:
     :path: build/rndeps-facades/DoubleConversion
   fast_float:
@@ -2141,6 +2172,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeDependencies:
     :podspec: "../node_modules/react-native/third-party-podspecs/ReactNativeDependencies.podspec"
+  RNCMaskedView:
+    :path: "../node_modules/@react-native-masked-view/masked-view"
+  RNDeviceInfo:
+    :path: "../node_modules/react-native-device-info"
   RNFBApp:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBCrashlytics:
@@ -2154,6 +2189,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: 8502bfdc46e2804408af2e163049ece181009af4
+  BVLinearGradient: cb006ba232a1f3e4f341bb62c42d1098c284da70
   DoubleConversion: 501a575c40c0b50c89685762dd3e415e6bb26fb0
   fast_float: 7c925d1cebf8328d4018d061f49377e9f887e3b4
   FBLazyVector: 732df79fea96f10cc14477969cea05707026d2fd
@@ -2252,6 +2288,8 @@ SPEC CHECKSUMS:
   ReactCodegen: 54c5683990aa5778422c6f7dc44476d8a8a38775
   ReactCommon: 5f5a302748322015f2e3334869cdd9b4d0395846
   ReactNativeDependencies: ec5530432d8191b38e278117d498aaff05ea9d6f
+  RNCMaskedView: d4884d6b3b256bd1830a211db3d5f551def82e36
+  RNDeviceInfo: 4c852998208b60dc192ae3529e5867817719ad1e
   RNFBApp: 7de406c728113fcc16c74a5b79a0dca70f68a01b
   RNFBCrashlytics: 49a57e1ebc8bc118881f44be5b3ecd95b5431992
   RNScreens: a2103f13fa603c405092daf70ca4eb3a6291fd6d
