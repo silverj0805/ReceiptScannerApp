@@ -25,7 +25,10 @@ module.exports = {
           'sibling',
           'index',
         ],
-        pathGroups: [{ pattern: '@/**', group: 'internal' }],
+        pathGroups: [
+          { pattern: '@/**', group: 'internal' },
+          { pattern: '@specs/**', group: 'internal' },
+        ],
         pathGroupsExcludedImportTypes: ['builtin'],
         'newlines-between': 'always',
         alphabetize: { order: 'asc', caseInsensitive: true },

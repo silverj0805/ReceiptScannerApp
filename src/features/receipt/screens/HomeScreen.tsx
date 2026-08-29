@@ -2,13 +2,13 @@ import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { useState } from 'react';
 import { Button, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import NativeReceiptScanner from '../../../../specs/NativeReceiptScanner';
-import { Box } from '../../../shared/ui/Box';
+import { Box } from '@/shared/ui/Box';
+import NativeReceiptScanner from '@specs/NativeReceiptScanner';
 
 // require()는 정적 문자열만 허용돼서 미리 맵으로 준비해둠.
 const exampleReceipts: Record<string, number> = {
-  receipt1: require('../../../assets/examples/receipt1.jpeg'),
-  receipt2: require('../../../assets/examples/receipt2.jpeg'),
+  receipt1: require('@/assets/examples/receipt1.jpeg'),
+  receipt2: require('@/assets/examples/receipt2.jpeg'),
 };
 
 // placeholder — 실제 홈 대시보드 UI(이번 달 지출 요약 등)는 이 화면을 본격적으로
