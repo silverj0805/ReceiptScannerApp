@@ -2,12 +2,12 @@
  * @format
  */
 
-import React from 'react';
-import ReactTestRenderer from 'react-test-renderer';
+import { render, screen } from '@testing-library/react-native';
+
 import App from './App';
 
-test('renders correctly', async () => {
-  await ReactTestRenderer.act(() => {
-    ReactTestRenderer.create(<App />);
-  });
+test('renders the home tab on launch', async () => {
+  await render(<App />);
+
+  expect(screen.getByText('홈')).toBeTruthy();
 });
