@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "80905087997",
+    "project_id": "receiptscannerapp-e0d57",
+    "storage_bucket": "receiptscannerapp-e0d57.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:80905087997:android:0c3c1807fd97e0345e8794",
+        "android_client_info": {
+          "package_name": "com.silverj0805.receiptscannerapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAIr6z51DqgEq6Wyoy1tSPaZgu0MvbenPo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

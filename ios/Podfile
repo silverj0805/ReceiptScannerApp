@@ -14,6 +14,17 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+# react-native-firebase가 기본으로 쓰는 SPM(Swift Package Manager) 기반 Firebase 해석은
+# static 링키지(이 프로젝트의 기본값, use_frameworks! 미사용)와 함께 쓰면 중복 심볼 링크
+# 에러가 남 — pod install이 직접 안내해준 두 가지 해결책 중, 프로젝트 전체를 동적 프레임워크로
+# 바꾸는 대신(더 큰 구조 변경) 이쪽(SPM 비활성화, 기존 CocoaPods 방식으로 되돌림)을 선택.
+$RNFirebaseDisableSPM = true
+
+# Firebase의 일부 Swift 팟(FirebaseCoreInternal, FirebaseCrashlytics 등)이 module map이
+# 없는 ObjC 팟(GoogleUtilities 등)에 의존하는데, static 라이브러리로 빌드할 땐 그 경우
+# CocoaPods가 이 옵션을 켜라고 직접 안내함 — Swift에서 import 가능하도록 module map을 생성.
+use_modular_headers!
+
 target 'ReceiptScannerApp' do
   config = use_native_modules!
 

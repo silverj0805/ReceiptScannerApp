@@ -128,3 +128,8 @@ dependencies {
     // ML Kit Text Recognition (Korean) — scanText 네이티브 모듈용, bundled(오프라인) 방식
     implementation("com.google.mlkit:text-recognition-korean:16.0.1")
 }
+
+// Firebase 플러그인은 공식 문서에 따라 파일의 맨 아래, 그리고 반드시 이 순서(google-services 먼저,
+// crashlytics 나중)로 적용해야 한다.
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
