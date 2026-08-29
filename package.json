@@ -3,11 +3,15 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
+    "android": "npx react-native run-android",
+    "android:release": "npx react-native run-android --mode=release",
+    "ios": "npx react-native run-ios",
+    "ios:release": "npx react-native run-ios --mode=Release",
     "lint": "eslint .",
-    "start": "react-native start",
-    "test": "jest"
+    "start": "npx react-native start --reset-cache",
+    "test": "jest",
+    "apk:debug": "cd android && ./gradlew assembleDebug && cd ..",
+    "apk:release": "cd android && ./gradlew assembleRelease && cd .."
   },
   "dependencies": {
     "@react-native/new-app-screen": "0.87.0",
