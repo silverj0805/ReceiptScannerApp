@@ -1,4 +1,4 @@
-package com.receiptscannerapp
+package com.silverj0805.receiptscannerapp
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

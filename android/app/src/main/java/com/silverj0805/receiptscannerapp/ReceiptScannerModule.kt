@@ -1,4 +1,4 @@
-package com.receiptscannerapp
+package com.silverj0805.receiptscannerapp
 
 import android.net.Uri
 import com.facebook.react.bridge.Promise

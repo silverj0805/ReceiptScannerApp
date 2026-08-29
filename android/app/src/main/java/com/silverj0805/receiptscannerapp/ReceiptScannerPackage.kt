@@ -1,4 +1,4 @@
-package com.receiptscannerapp
+package com.silverj0805.receiptscannerapp
 
 import com.facebook.react.BaseReactPackage
 import com.facebook.react.bridge.NativeModule

@@ -45,7 +45,7 @@
     "type": "modules",
     "jsSrcsDir": "specs",
     "android": {
-      "javaPackageName": "com.receiptscannerapp"
+      "javaPackageName": "com.silverj0805.receiptscannerapp"
     },
     "ios": {
       "modules": {

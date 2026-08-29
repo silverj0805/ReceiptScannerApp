@@ -1,4 +1,4 @@
-package com.receiptscannerapp
+package com.silverj0805.receiptscannerapp
 
 import android.app.Application
 import com.facebook.react.PackageList
