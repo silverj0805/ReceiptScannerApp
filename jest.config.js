@@ -7,7 +7,7 @@ module.exports = {
   // @bundled-es-modules/*, headers-polyfill, strict-event-emitter, outvariant, until-async)도
   // 트랜스파일이 안 된 상태라 여기 다 추가해야 함(공식 커뮤니티 가이드에서도 안내하는 목록).
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-native-firebase|@react-navigation|react-native-safe-area-context|react-native-error-boundary|msw|rettime|@mswjs|@open-draft|@bundled-es-modules|headers-polyfill|strict-event-emitter|outvariant|until-async)/)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-native-firebase|@react-navigation|react-native-safe-area-context|react-native-error-boundary|uniwind|msw|rettime|@mswjs|@open-draft|@bundled-es-modules|headers-polyfill|strict-event-emitter|outvariant|until-async)/)',
   ],
   // rettime(msw의 의존성)이 .mjs 확장자로 배포되는데, 기본 transform 패턴이
   // js/ts/tsx만 잡고 mjs를 빼먹어서 transformIgnorePatterns를 뚫어놔도 애초에
