@@ -1,17 +1,18 @@
 import { http, HttpResponse } from 'msw';
 import type { HttpHandler } from 'msw';
 
-import type { Receipt, ReceiptSummary } from '@/features/receipt/api/types';
+import type { Receipt } from '@/features/receipt/api/types/receipt';
+import type { ReceiptSummary } from '@/features/receipt/api/types/summary';
 
 // GET /receipts/summary — 리스트 없이 집계만 내려줌.
 const summaryFixture: ReceiptSummary = {
   total: 842300,
   deltaPercent: -12,
   byCategory: [
-    { category: 'food', amount: 12400, percent: 1 },
-    { category: 'etc', amount: 6800, percent: 1 },
-    { category: 'transit', amount: 9200, percent: 1 },
-    { category: 'shop', amount: 34000, percent: 4 },
+    { category: 'food', amount: 353766, percent: 42 },
+    { category: 'transit', amount: 151614, percent: 18 },
+    { category: 'shop', amount: 126345, percent: 15 },
+    { category: 'etc', amount: 210575, percent: 25 },
   ],
 };
 
@@ -50,5 +51,12 @@ const recentReceiptsFixture: Receipt[] = [
 
 export const handlers: HttpHandler[] = [
   http.get('*/receipts/summary', () => HttpResponse.json(summaryFixture)),
-  http.get('*/receipts', () => HttpResponse.json(recentReceiptsFixture)),
+
+  // take/skip 쿼리를 실제로 반영해서 무한 스크롤 페이지네이션 동작을 재현.
+  http.get('*/receipts', ({ request }) => {
+    const url = new URL(request.url);
+    const take = Number(url.searchParams.get('take') ?? 10);
+    const skip = Number(url.searchParams.get('skip') ?? 0);
+    return HttpResponse.json(recentReceiptsFixture.slice(skip, skip + take));
+  }),
 ];

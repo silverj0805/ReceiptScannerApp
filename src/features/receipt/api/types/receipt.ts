@@ -1,0 +1,11 @@
+import type { CategoryId } from './category';
+
+export interface Receipt {
+  id: number;
+  merchant: string;
+  itemName?: string;
+  amount: number;
+  category: CategoryId;
+  rawText?: string;
+  date: string; // ISO date string (YYYY-MM-DD)
+}

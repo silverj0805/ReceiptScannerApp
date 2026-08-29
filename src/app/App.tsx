@@ -4,6 +4,7 @@
 
 import '../global.css';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StatusBar, useColorScheme } from 'react-native';
 import ErrorBoundary from 'react-native-error-boundary';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -23,16 +24,20 @@ function handleError(error: Error, stackTrace: string) {
   }).catch(() => {});
 }
 
+const queryClient = new QueryClient();
+
 function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ErrorBoundary onError={handleError}>
-        <RootNavigator />
-      </ErrorBoundary>
-    </SafeAreaProvider>
+    <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
+        <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+        <ErrorBoundary onError={handleError}>
+          <RootNavigator />
+        </ErrorBoundary>
+      </SafeAreaProvider>
+    </QueryClientProvider>
   );
 }
 
