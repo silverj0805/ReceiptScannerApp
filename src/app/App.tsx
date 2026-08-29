@@ -10,7 +10,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { recordErrorWithContext } from '@/shared/firebase/crashlyticsRecorder';
 
-import { RootNavigator } from './navigation/RootNavigator';
+import RootNavigator from './navigation/RootNavigator';
 
 // 렌더링 중 잡히지 않은 에러(ErrorBoundary가 잡는 것)도 화면 컨텍스트와 함께
 // Crashlytics에 기록되도록 연결. UI는 라이브러리 기본 FallbackComponent 사용.

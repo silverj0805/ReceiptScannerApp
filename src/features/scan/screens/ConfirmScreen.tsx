@@ -3,13 +3,13 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import type { StackParamList } from '@/app/navigation/types';
 
-function ReceiptDetailScreen() {
-  const route = useRoute<RouteProp<StackParamList, 'Detail'>>();
+function ConfirmScreen() {
+  const route = useRoute<RouteProp<StackParamList, 'Confirm'>>();
 
   return (
     <View style={styles.container}>
-      <Text>상세 화면 (placeholder)</Text>
-      <Text>receiptId: {route.params.receiptId}</Text>
+      <Text>확인 화면 (placeholder)</Text>
+      <Text>imageUri: {route.params.imageUri}</Text>
     </View>
   );
 }
@@ -23,4 +23,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ReceiptDetailScreen;
+export default ConfirmScreen;

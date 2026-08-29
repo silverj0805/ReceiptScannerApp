@@ -1,31 +1,68 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useResolveClassNames } from 'uniwind';
 
-import { CaptureScreen } from '@/features/receipt/screens/CaptureScreen';
-import { HomeScreen } from '@/features/receipt/screens/HomeScreen';
-import { ReceiptListScreen } from '@/features/receipt/screens/ReceiptListScreen';
+import HomeScreen from '@/features/receipt/screens/HomeScreen';
+import ReceiptListScreen from '@/features/receipt/screens/ReceiptListScreen';
+import ScanScreen from '@/features/scan/screens/ScanScreen';
 
+import ScanTabButton from './tabBars/ScanTabButton';
+import {
+  renderHomeIcon,
+  renderHomeLabel,
+  renderReceiptListIcon,
+  renderReceiptListLabel,
+} from './tabBars/TabBarIcon';
 import type { BottomTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
-export function BottomTabNavigator() {
+function BottomTabNavigator() {
+  const insets = useSafeAreaInsets();
+  const tabBarTokenStyle = useResolveClassNames(
+    'bg-white border-t border-[#e8e6e1]',
+  );
+
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: {
+          ...tabBarTokenStyle,
+          height: 64 + insets.bottom,
+          paddingBottom: insets.bottom,
+        },
+      }}
+    >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{ title: '홈' }}
+        options={{
+          title: '홈',
+          tabBarIcon: renderHomeIcon,
+          tabBarLabel: renderHomeLabel,
+        }}
       />
       <Tab.Screen
-        name="Capture"
-        component={CaptureScreen}
-        options={{ title: '카메라' }}
+        name="Scan"
+        component={ScanScreen}
+        options={{
+          title: '스캔',
+          tabBarButton: ScanTabButton,
+          tabBarStyle: { display: 'none' },
+        }}
       />
       <Tab.Screen
         name="ReceiptList"
         component={ReceiptListScreen}
-        options={{ title: '내역' }}
+        options={{
+          title: '내역',
+          tabBarIcon: renderReceiptListIcon,
+          tabBarLabel: renderReceiptListLabel,
+        }}
       />
     </Tab.Navigator>
   );
 }
+
+export default BottomTabNavigator;

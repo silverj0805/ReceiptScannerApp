@@ -3,7 +3,7 @@ import { Pressable, View } from 'react-native';
 
 import Icon from '@/shared/ui/Icon';
 
-function CameraTabButton(props: BottomTabBarButtonProps) {
+function ScanTabButton(props: BottomTabBarButtonProps) {
   return (
     <Pressable
       {...props}
@@ -17,4 +17,4 @@ function CameraTabButton(props: BottomTabBarButtonProps) {
   );
 }
 
-export default CameraTabButton;
+export default ScanTabButton;
