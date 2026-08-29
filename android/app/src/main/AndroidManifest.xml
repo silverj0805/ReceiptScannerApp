@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- 영수증 스캔용 카메라(react-native-vision-camera). 갤러리(react-native-image-picker)는
+         Android Photo Picker(targetSdk 33+)를 쓰기 때문에 별도 저장소 권한이 필요 없음. -->
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
       android:name=".MainApplication"
