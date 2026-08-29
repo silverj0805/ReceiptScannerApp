@@ -1,7 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
 import { CaptureScreen } from '@/features/receipt/screens/CaptureScreen';
 import { HomeScreen } from '@/features/receipt/screens/HomeScreen';
 import { ReceiptListScreen } from '@/features/receipt/screens/ReceiptListScreen';
+
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();

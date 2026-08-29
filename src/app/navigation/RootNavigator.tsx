@@ -1,7 +1,9 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import { ConfirmScreen } from '@/features/receipt/screens/ConfirmScreen';
 import { ReceiptDetailScreen } from '@/features/receipt/screens/ReceiptDetailScreen';
+
 import { MainTabNavigator } from './MainTabNavigator';
 import type { RootStackParamList } from './types';
 

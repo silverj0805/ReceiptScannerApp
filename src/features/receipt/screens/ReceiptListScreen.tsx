@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, StyleSheet, Text, View } from 'react-native';
+
 import type { RootStackParamList } from '@/app/navigation/types';
 
 // placeholder — 실제 영수증 목록 UI/API 연동은 이 화면을 본격적으로 만드는

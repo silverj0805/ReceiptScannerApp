@@ -1,5 +1,6 @@
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { StyleSheet, Text, View } from 'react-native';
+
 import type { RootStackParamList } from '@/app/navigation/types';
 
 // placeholder — 실제 영수증 상세 UI/API 연동은 이 화면을 본격적으로 만드는

@@ -1,6 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Button, StyleSheet, Text, View } from 'react-native';
+
 import type { RootStackParamList } from '@/app/navigation/types';
 
 // placeholder — 실제 카메라 UI/퍼미션/촬영 로직은 이 화면을 본격적으로 만드는

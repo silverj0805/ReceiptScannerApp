@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+
 import NativeReceiptScanner from '../../../../specs/NativeReceiptScanner';
 
 // require()는 정적 문자열만 허용돼서 미리 맵으로 준비해둠.

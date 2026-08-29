@@ -1,5 +1,6 @@
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { StyleSheet, Text, View } from 'react-native';
+
 import type { RootStackParamList } from '@/app/navigation/types';
 
 // placeholder — OCR 결과 편집/카테고리 선택 등 실제 확인 화면 UI는 이 화면을
