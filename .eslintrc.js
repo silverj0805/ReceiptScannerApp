@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
   root: true,
   extends: '@react-native',
@@ -5,9 +7,11 @@ module.exports = {
   settings: {
     // tsconfig.json의 paths(@/* -> ./src/*)를 그대로 읽어서, eslint-plugin-import의
     // 규칙들이 별칭 import도 상대경로 import와 동일하게 인식하도록 연결.
+    // project는 cwd가 파일 하위 폴더여도(에디터 ESLint) 찾도록 절대경로로 둔다.
     'import/resolver': {
       typescript: {
-        project: './tsconfig.json',
+        alwaysTryTypes: true,
+        project: path.resolve(__dirname, 'tsconfig.json'),
       },
     },
   },
