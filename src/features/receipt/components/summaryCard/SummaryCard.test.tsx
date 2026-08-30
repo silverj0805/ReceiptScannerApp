@@ -17,7 +17,7 @@ test('금액과 증감률을 표시한다', async () => {
   );
 
   expect(screen.getByText('₩842,300')).toBeTruthy();
-  expect(screen.getByText('-12%')).toBeTruthy();
+  expect(screen.getByText('지난 달 대비 -12%')).toBeTruthy();
 });
 
 test('카테고리별 비중을 한글 라벨+퍼센트로 보여준다', async () => {

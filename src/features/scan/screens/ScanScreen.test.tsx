@@ -106,7 +106,7 @@ test('설정으로 이동 버튼을 누르면 시스템 설정 앱을 연다', a
 
   await render(<ScanScreen />);
 
-  fireEvent.press(screen.getByText('설정으로 이동'));
+  await fireEvent.press(screen.getByText('설정으로 이동'));
 
   expect(Linking.openSettings).toHaveBeenCalled();
 });
@@ -116,7 +116,7 @@ test('권한 거부 화면에서 나중에 하기를 누르면 이전 화면으�
 
   await render(<ScanScreen />);
 
-  fireEvent.press(screen.getByText('나중에 하기'));
+  await fireEvent.press(screen.getByText('나중에 하기'));
 
   expect(mockGoBack).toHaveBeenCalled();
 });
@@ -134,7 +134,7 @@ test('닫기 버튼을 누르면 이전 화면으로 돌아간다', async () => 
 
   await render(<ScanScreen />);
 
-  fireEvent.press(screen.getByTestId('scan-close-button'));
+  await fireEvent.press(screen.getByTestId('scan-close-button'));
 
   expect(mockGoBack).toHaveBeenCalled();
 });
@@ -144,7 +144,7 @@ test('촬영 버튼을 누르면 사진을 찍고 확인 화면으로 이동한�
 
   await render(<ScanScreen />);
 
-  fireEvent.press(screen.getByTestId('scan-capture-button'));
+  await fireEvent.press(screen.getByTestId('scan-capture-button'));
 
   await waitFor(() => {
     expect(mockCapturePhoto).toHaveBeenCalled();
@@ -166,7 +166,7 @@ test('갤러리에서 사진을 선택하면 확인 화면으로 이동한다', 
 
   await render(<ScanScreen />);
 
-  fireEvent.press(screen.getByTestId('scan-gallery-button'));
+  await fireEvent.press(screen.getByTestId('scan-gallery-button'));
 
   await waitFor(() => {
     expect(mockNavigate).toHaveBeenCalledWith('Stacks', {
@@ -182,7 +182,7 @@ test('갤러리 선택을 취소하면 화면 이동이 일어나지 않는다',
 
   await render(<ScanScreen />);
 
-  fireEvent.press(screen.getByTestId('scan-gallery-button'));
+  await fireEvent.press(screen.getByTestId('scan-gallery-button'));
 
   await waitFor(() => {
     expect(mockedLaunchImageLibrary).toHaveBeenCalled();

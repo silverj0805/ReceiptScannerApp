@@ -43,7 +43,7 @@ test('데이터 도착 후 이번 달 지출 요약을 보여준다', async () =
 
   await waitFor(() => {
     expect(screen.getByText('₩842,300')).toBeTruthy();
-    expect(screen.getByText('-12%')).toBeTruthy();
+    expect(screen.getByText('지난 달 대비 -12%')).toBeTruthy();
     // list 쿼리도 같이 settle될 때까지 기다려서 act 경고를 막음.
     expect(screen.getByText('스타벅스 강남점')).toBeTruthy();
   });
