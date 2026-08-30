@@ -656,7 +656,9 @@ describe('직접 기록 모드 (route.params에 imageUri/info가 둘 다 없을 
     expect(screen.queryByText('촬영한 영수증')).toBeNull();
     expect(screen.queryByText('다시 촬영')).toBeNull();
     expect(
-      screen.queryByText('자동 인식 결과예요. 확인 후 저장해주세요'),
+      screen.queryByText(
+        '자동 인식 결과는 부정확할 수 있습니다. 확인 후 저장해주세요.',
+      ),
     ).toBeNull();
     expect(screen.queryByText('인식된 원문')).toBeNull();
     expect(screen.queryByText('텍스트를 인식하지 못했어요')).toBeNull();

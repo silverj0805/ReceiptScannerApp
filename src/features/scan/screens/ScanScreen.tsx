@@ -216,7 +216,7 @@ function ScanScreen() {
                 colorClassName="accent-white"
               />
               <Text className="flex-1 text-xs font-semibold text-white">
-                예: 인식률을 높이기 위해 선명한 화질로 필요한 정보만 가까이서
+                인식률을 높이기 위해 선명한 화질로 필요한 정보만 가까이서
                 찍어주세요
               </Text>
             </View>

@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import React from 'react';
 import { View, Text, Pressable } from 'react-native';
 
@@ -19,10 +18,10 @@ const ListHeaderComponent = ({
 }: ListHeaderComponentProps) => (
   <View className="gap-6">
     <View className="gap-2">
-      <View className="flex-row items-center justify-between">
+      <View className="flex-row   gap-1 items-baseline">
         <Text className="text-2xl font-bold">🧸가계부</Text>
-        <Text className="text-sm text-gray font0-semibold">
-          {dayjs().format('YYYY.MM.DD')}
+        <Text className="text-xs text-gray font0-semibold">
+          오늘도 잘 모으곰 부자되세요!
         </Text>
       </View>
       <WiseSaying />

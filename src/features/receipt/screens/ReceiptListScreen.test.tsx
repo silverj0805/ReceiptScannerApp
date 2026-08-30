@@ -75,13 +75,16 @@ beforeEach(() => {
   mockReceiptsEndpoint();
 });
 
-test('데이터 도착 전엔 로딩 상태를 보여준다', async () => {
+test('데이터 도착 전엔 스켈레톤을 보여주고, 필터 UI는 그대로 조작할 수 있다', async () => {
   await renderReceiptListScreen();
 
-  expect(screen.getByTestId('receipt-list-loading')).toBeTruthy();
+  // HomeScreen과 동일한 패턴: 전체 화면을 스피너로 덮지 않고 목록 자리만
+  // 스켈레톤으로 보여줘서, 로딩 중에도 기간/카테고리 필터는 바로 조작할 수 있다.
+  expect(screen.getAllByTestId('receipt-list-skeleton').length).toBeGreaterThan(0);
+  expect(screen.getByTestId('period-month')).toBeTruthy();
 
   await waitFor(() => {
-    expect(screen.queryByTestId('receipt-list-loading')).toBeNull();
+    expect(screen.queryByTestId('receipt-list-skeleton')).toBeNull();
   });
 });
 

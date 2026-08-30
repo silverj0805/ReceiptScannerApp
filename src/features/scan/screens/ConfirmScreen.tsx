@@ -98,7 +98,6 @@ function ConfirmScreen() {
   const [rawText, setRawText] = useState<string | null>(
     isEditMode ? info.rawText ?? '' : isDirectEntry ? '' : null,
   );
-  console.log('🚀 ~ ConfirmScreen ~ rawText:', rawText);
   const [manualEntry, setManualEntry] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -294,7 +293,7 @@ function ConfirmScreen() {
 
       <KeyboardAwareScrollView
         bottomOffset={20}
-        contentContainerClassName="gap-3.5 px-5 pb-5"
+        contentContainerClassName="gap-3.5 px-5 pb-10"
         keyboardShouldPersistTaps="handled"
       >
         {/* 촬영한 영수증 카드/안내 문구 — 수정·직접입력 모드는 사진이 없으니 안 보여줌 */}
@@ -325,7 +324,7 @@ function ConfirmScreen() {
                 colorClassName="accent-gray"
               />
               <Text className="text-xs text-gray">
-                자동 인식 결과예요. 확인 후 저장해주세요
+                자동 인식 결과는 부정확할 수 있습니다. 확인 후 저장해주세요.
               </Text>
             </View>
           </>
@@ -411,15 +410,18 @@ function ConfirmScreen() {
             name="amount"
             rules={{ required: '금액을 입력해주세요' }}
             render={({ field: { onChange, onBlur, value } }) => (
-              <TextInput
-                testID="amount-input"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                keyboardType="number-pad"
-                placeholder="0"
-                className="rounded-xl border border-[#e8e6e1] bg-white px-3.5 py-3.5 text-right text-lg font-extrabold text-black"
-              />
+              <View className="flex-row items-center rounded-xl border border-[#e8e6e1] bg-white px-3.5 py-3.5">
+                <Text className="text-lg font-extrabold text-gray">₩</Text>
+                <TextInput
+                  testID="amount-input"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  keyboardType="number-pad"
+                  placeholder="0"
+                  className="flex-1 text-right text-lg font-extrabold text-black"
+                />
+              </View>
             )}
           />
           <ErrorMessage

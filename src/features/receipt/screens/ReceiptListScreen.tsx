@@ -14,9 +14,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import { useCSSVariable } from 'uniwind';
 
 import type { RootStackParamList } from '@/app/navigation/types';
+import ReceiptItemSkeleton from '@/features/receipt/components/recentReceipts/ReceiptItemSkeleton';
 import Icon from '@/shared/components/ui/Icon';
 import { CATEGORY_IDS, getCategoryInfo } from '@/shared/utils/category';
 
@@ -27,6 +29,19 @@ import type { PeriodFilter } from '../utils/receiptFilters';
 import { categoriesToParam, periodToMonthParam } from '../utils/receiptFilters';
 
 const PAGE_SIZE = 10;
+
+// HomeScreen과 동일한 패턴: 로딩 중엔 실데이터 대신 스켈레톤 "그룹" 행을 data로
+// 흘려서 FlatList가 그대로 렌더링하게 함(전체 화면을 스피너로 덮는 대신, 필터
+// UI는 그대로 두고 목록 자리만 스켈레톤으로 보여줌).
+const SKELETON_GROUP_COUNT = 3;
+type SkeletonRow = { skeletonKey: number };
+type ListRow = ReceiptGroup | SkeletonRow;
+const SKELETON_ROWS: SkeletonRow[] = Array.from(
+  { length: SKELETON_GROUP_COUNT },
+  (_, i) => ({ skeletonKey: i }),
+);
+const isSkeletonRow = (row: ListRow): row is SkeletonRow =>
+  'skeletonKey' in row;
 
 const PERIOD_TABS: { id: PeriodFilter; label: string }[] = [
   { id: 'month', label: '이번 달' },
@@ -45,7 +60,7 @@ function ReceiptListScreen() {
   const backgroundColor = useCSSVariable('--color-background');
   const primaryColor = useCSSVariable('--color-primary');
 
-  const scrollRef = useRef<FlatList<ReceiptGroup> | null>(null);
+  const scrollRef = useRef<FlatList<ListRow> | null>(null);
   useScrollToTop(scrollRef);
 
   const navigation =
@@ -96,6 +111,7 @@ function ReceiptListScreen() {
 
   const receipts = listQuery.data?.pages.flatMap(page => page.data) ?? [];
   const groups = groupReceiptsByDate(receipts);
+  const rows: ListRow[] = listQuery.isLoading ? SKELETON_ROWS : groups;
 
   const handleEndReached = () => {
     if (listQuery.hasNextPage && !listQuery.isFetchingNextPage) {
@@ -116,17 +132,6 @@ function ReceiptListScreen() {
       setRefreshing(false);
     });
   };
-
-  if (listQuery.isLoading) {
-    return (
-      <View
-        testID="receipt-list-loading"
-        className="flex-1 items-center justify-center bg-background"
-      >
-        <ActivityIndicator color="#1B5E43" />
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView
@@ -166,7 +171,7 @@ function ReceiptListScreen() {
 
         {/* 카테고리 — 다중 선택(전체는 선택 해제와 동일) */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View className="flex-row gap-2">
+          <View className="flex-row gap-px">
             {CATEGORY_CHIPS.map(({ id }) => {
               const info = id === 'all' ? null : getCategoryInfo(id);
               const label = id === 'all' ? '전체' : info!.label;
@@ -210,8 +215,10 @@ function ReceiptListScreen() {
         testID="receipt-list"
         showsVerticalScrollIndicator={false}
         ref={scrollRef}
-        data={groups}
-        keyExtractor={group => group.date}
+        data={rows}
+        keyExtractor={row =>
+          isSkeletonRow(row) ? `skeleton-${row.skeletonKey}` : row.date
+        }
         contentContainerClassName="grow gap-4 px-5 pb-10"
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.7}
@@ -232,52 +239,69 @@ function ReceiptListScreen() {
             <ActivityIndicator color="#1B5E43" />
           ) : undefined
         }
-        renderItem={({ item: group }) => (
-          <View className="gap-2">
-            <View className="flex-row items-center justify-between px-0.5">
-              <Text className="text-xs font-bold text-gray">
-                {dayjs(group.date).locale('ko').format('M월 D일 dddd')}
-              </Text>
-              <Text className="text-xs font-bold text-gray">
-                ₩{group.total.toLocaleString('ko-KR')}
-              </Text>
+        renderItem={({ item: row }) =>
+          isSkeletonRow(row) ? (
+            <View testID="receipt-list-skeleton" className="gap-2">
+              <View className="flex-row items-center justify-between px-0.5">
+                <SkeletonPlaceholder borderRadius={4}>
+                  <SkeletonPlaceholder.Item width={90} height={12} />
+                </SkeletonPlaceholder>
+                <SkeletonPlaceholder borderRadius={4}>
+                  <SkeletonPlaceholder.Item width={60} height={12} />
+                </SkeletonPlaceholder>
+              </View>
+              <View className="gap-2">
+                <ReceiptItemSkeleton />
+                <ReceiptItemSkeleton />
+              </View>
             </View>
+          ) : (
             <View className="gap-2">
-              {group.items.map(item => {
-                const info = getCategoryInfo(item.category);
-                return (
-                  <Pressable
-                    key={item.id}
-                    testID={`receipt-item-${item.id}`}
-                    onPress={() => goToDetail(item.id)}
-                    className="flex-row items-center justify-between rounded-2xl border border-[#e8e6e1] bg-white px-3.5 py-3"
-                  >
-                    <View className="flex-row items-center gap-2.5">
-                      <View
-                        className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: info.color }}
-                      />
-                      <View className="gap-0.5">
-                        <Text className="text-[13px] font-bold text-black">
-                          {item.merchant}
-                        </Text>
-                        <Text className="text-[11px] text-gray">
-                          {info.label}
-                        </Text>
+              <View className="flex-row items-center justify-between px-0.5">
+                <Text className="text-xs font-bold text-gray">
+                  {dayjs(row.date).locale('ko').format('M월 D일 dddd')}
+                </Text>
+                <Text className="text-xs font-bold text-gray">
+                  ₩{row.total.toLocaleString('ko-KR')}
+                </Text>
+              </View>
+              <View className="gap-2">
+                {row.items.map(item => {
+                  const info = getCategoryInfo(item.category);
+                  return (
+                    <Pressable
+                      key={item.id}
+                      testID={`receipt-item-${item.id}`}
+                      onPress={() => goToDetail(item.id)}
+                      className="flex-row items-center justify-between rounded-2xl border border-[#e8e6e1] bg-white px-3.5 py-3"
+                    >
+                      <View className="flex-row items-center gap-2.5">
+                        <View
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: info.color }}
+                        />
+                        <View className="gap-0.5">
+                          <Text className="text-[13px] font-bold text-black">
+                            {item.merchant}
+                          </Text>
+                          <Text className="text-[11px] text-gray">
+                            {info.label}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
-                    <Text className="text-sm font-extrabold text-black">
-                      ₩{item.amount.toLocaleString('ko-KR')}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+                      <Text className="text-sm font-extrabold text-black">
+                        ₩{item.amount.toLocaleString('ko-KR')}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        )}
+          )
+        }
         refreshControl={
           <RefreshControl
-            testID="receipt-list-loading"
+            testID="receipt-list-refresh"
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor={primaryColor}
