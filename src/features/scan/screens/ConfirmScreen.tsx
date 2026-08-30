@@ -34,15 +34,18 @@ interface ConfirmFormValues {
   merchant: string;
   amount: string;
   date: string;
-  category: CategoryId;
+  // ''(빈 값) = 아직 선택 안 함. 저장하기를 누르기 전에도 반드시 사용자가 직접 골라야 함.
+  category: CategoryId | '';
 }
 
 const DEFAULT_VALUES: ConfirmFormValues = {
   merchant: '',
   amount: '',
   date: '',
-  category: 'food',
+  category: '',
 };
+
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function ConfirmScreen() {
   const navigation = useNavigation();
@@ -58,8 +61,12 @@ function ConfirmScreen() {
     control,
     handleSubmit,
     reset,
-    formState: { errors },
-  } = useForm<ConfirmFormValues>({ defaultValues: DEFAULT_VALUES });
+    formState: { errors, isValid },
+  } = useForm<ConfirmFormValues>({
+    defaultValues: DEFAULT_VALUES,
+    // 필드가 바뀔 때마다 다시 검증해서 저장하기 버튼 활성화 여부가 실시간으로 반영되게 함.
+    mode: 'onChange',
+  });
 
   useEffect(() => {
     NativeReceiptScanner.scanText(imageUri)
@@ -72,7 +79,8 @@ function ConfirmScreen() {
           merchant: parsed.merchant ?? '',
           amount: parsed.amount != null ? String(parsed.amount) : '',
           date: parsed.date ?? '',
-          category: 'food',
+          // 자동 인식 결과라도 카테고리는 사용자가 직접 확인하고 고르게 함.
+          category: '',
         });
       })
       .catch(() => {
@@ -263,23 +271,42 @@ function ConfirmScreen() {
           />
         </View>
 
-        {/* 날짜 — 이번 스코프는 인식된 값을 보여주기만 함(피커는 다음 단계). */}
+        {/* 날짜 — 피커 없이 텍스트로 직접 고칠 수 있게(인식 실패해도 저장 가능해야 함). */}
         <View className="gap-1.5">
           <Text className="text-xs font-semibold text-gray">날짜</Text>
           <Controller
             control={control}
             name="date"
-            render={({ field: { value } }) => (
+            rules={{
+              required: '날짜를 입력해주세요',
+              pattern: {
+                value: DATE_PATTERN,
+                message: 'YYYY-MM-DD 형식으로 입력해주세요',
+              },
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
               <View className="flex-row items-center gap-2 rounded-xl border border-[#e8e6e1] bg-white px-3.5 py-3.5">
                 <Icon
                   name="calendar-outline"
                   size={16}
                   colorClassName="accent-gray"
                 />
-                <Text className="text-sm font-semibold text-black">
-                  {value || '날짜를 인식하지 못했어요'}
-                </Text>
+                <TextInput
+                  testID="date-input"
+                  value={value}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  placeholder="YYYY-MM-DD"
+                  className="flex-1 text-sm font-semibold text-black"
+                />
               </View>
+            )}
+          />
+          <ErrorMessage
+            errors={errors}
+            name="date"
+            render={({ message }) => (
+              <Text className="text-xs text-[#B3261E]">{message}</Text>
             )}
           />
         </View>
@@ -290,6 +317,7 @@ function ConfirmScreen() {
           <Controller
             control={control}
             name="category"
+            rules={{ required: '카테고리를 선택해주세요' }}
             render={({ field: { onChange, value } }) => (
               <View className="flex-row flex-wrap gap-2">
                 {CATEGORY_IDS.map(id => {
@@ -321,13 +349,26 @@ function ConfirmScreen() {
               </View>
             )}
           />
+          <ErrorMessage
+            errors={errors}
+            name="category"
+            render={({ message }) => (
+              <Text className="text-xs text-[#B3261E]">{message}</Text>
+            )}
+          />
         </View>
       </ScrollView>
 
       <View className="border-t border-[#e8e6e1] bg-background px-5 pb-7 pt-4">
         <Pressable
+          testID="save-button"
+          disabled={!isValid}
           onPress={() => handleSubmit(onSubmit)()}
-          className="items-center rounded-2xl bg-primary py-4"
+          className={
+            isValid
+              ? 'items-center rounded-2xl bg-primary py-4'
+              : 'items-center rounded-2xl bg-primary py-4 opacity-40'
+          }
         >
           <Text className="text-[15px] font-bold text-white">저장하기</Text>
         </Pressable>
