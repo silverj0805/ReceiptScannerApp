@@ -6,6 +6,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react-native';
+import dayjs from 'dayjs';
 
 import { receiptQueryFactory, receiptRepository } from '@/features/receipt/api';
 import NativeReceiptScanner from '@specs/NativeReceiptScanner';
@@ -84,7 +85,8 @@ test('인식에 성공하면 점포명/총액/주문일시로 폼을 채운다',
   await waitFor(() => {
     expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
     expect(screen.getByDisplayValue('12400')).toBeTruthy();
-    expect(screen.getByDisplayValue('2026-08-20')).toBeTruthy();
+    // 날짜는 더 이상 TextInput이 아니라 피커를 여는 Pressable이라 표시 텍스트로 확인.
+    expect(screen.getByText('2026년 8월 20일')).toBeTruthy();
   });
 });
 
@@ -185,12 +187,55 @@ test('필드를 채웠다 비우면 해당 필드의 에러 메시지를 보여�
   // 값이 있다가 지워지는 상황을 만들어서 required 검증을 트리거함.
   await fireEvent.changeText(screen.getByTestId('merchant-input'), '가');
   await fireEvent.changeText(screen.getByTestId('merchant-input'), '');
-  await fireEvent.changeText(screen.getByTestId('date-input'), '2026/08/20');
 
   await waitFor(() => {
     expect(screen.getByText('가맹점명을 입력해주세요')).toBeTruthy();
-    expect(screen.getByText('YYYY-MM-DD 형식으로 입력해주세요')).toBeTruthy();
   });
+});
+
+test('날짜를 아직 선택하지 않았으면 안내 문구를 보여주고, 피커에서 고르면 반영된다', async () => {
+  mockedScanText.mockResolvedValue('');
+
+  await renderConfirmScreen();
+  await waitFor(() => {
+    expect(screen.getByText('텍스트를 인식하지 못했어요')).toBeTruthy();
+  });
+  await fireEvent.press(screen.getByText('직접 입력'));
+
+  expect(screen.getByText('날짜를 선택해주세요')).toBeTruthy();
+
+  await fireEvent.press(screen.getByTestId('date-input'));
+  expect(screen.getByTestId('date-picker-native')).toBeTruthy();
+
+  // 타임존 변환에 흔들리지 않도록 UTC('Z') 대신 로컬 시각으로 지정.
+  await fireEvent.changeText(
+    screen.getByTestId('date-picker-native'),
+    '2026-08-25T12:00:00',
+  );
+  await fireEvent.press(screen.getByText('확인'));
+
+  expect(screen.getByText('2026년 8월 25일')).toBeTruthy();
+});
+
+test('피커 휠을 건드리지 않고 확인만 눌러도 기본값(오늘)이 그대로 셋팅된다', async () => {
+  // 회귀 테스트: iOS UIDatePicker는 사용자가 실제로 휠을 굴려야만 onChange가 오기
+  // 때문에, 기본값을 그대로 둔 채 확인만 누르면 onChange가 한 번도 안 와서 폼에
+  // 반영이 안 되는 버그가 있었음(pendingDate로 항상 커밋하도록 고침).
+  mockedScanText.mockResolvedValue('');
+
+  await renderConfirmScreen();
+  await waitFor(() => {
+    expect(screen.getByText('텍스트를 인식하지 못했어요')).toBeTruthy();
+  });
+  await fireEvent.press(screen.getByText('직접 입력'));
+
+  await fireEvent.press(screen.getByTestId('date-input'));
+  expect(screen.getByTestId('date-picker-native')).toBeTruthy();
+
+  // 피커 값은 건드리지 않고 바로 확인.
+  await fireEvent.press(screen.getByText('확인'));
+
+  expect(screen.getByText(dayjs().format('YYYY년 M월 D일'))).toBeTruthy();
 });
 
 test('직접 입력 모드에서는 처음엔 저장하기 버튼이 비활성화돼 있다', async () => {

@@ -1,13 +1,20 @@
 import { ErrorMessage } from '@hookform/error-message';
+import DateTimePicker, {
+  DateTimePickerAndroid,
+} from '@react-native-community/datetimepicker';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
+  Modal,
+  Platform,
   Pressable,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
@@ -54,6 +61,16 @@ const DEFAULT_VALUES: ConfirmFormValues = {
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
+// 폼 값(YYYY-MM-DD 문자열) <-> 피커가 다루는 Date 객체 변환.
+// 아직 값이 없거나(직접 입력 모드 초기 상태) 형식이 깨져 있으면 today를 기본값으로 보여준다.
+// today는 호출부에서 매번 넘겨받는다 — 여기서 new Date()를 직접 만들면 렌더될 때마다
+// (다른 필드 타이핑 등으로) 매번 다른 timestamp가 생겨서 <DateTimePicker value>가 계속
+// 바뀐 값으로 보이고, 그 결과 첫 선택 시 스크롤 중인 피커가 계속 오늘 날짜로 리셋되며
+// 사용자가 고른 값이 "바로 셋팅 안 되는" 것처럼 보이는 버그가 있었다.
+const toPickerDate = (value: string, today: Date) =>
+  DATE_PATTERN.test(value) ? dayjs(value).toDate() : today;
+const formatPickerDate = (date: Date) => dayjs(date).format('YYYY-MM-DD');
+
 function ConfirmScreen() {
   const queryClient = useQueryClient();
 
@@ -67,6 +84,17 @@ function ConfirmScreen() {
   const [manualEntry, setManualEntry] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // iOS 전용 — 날짜 피커를 담는 바텀시트 Modal의 표시 여부.
+  // (Android는 DateTimePickerAndroid.open()이 OS 다이얼로그를 직접 띄우므로 불필요.)
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  // iOS 스피너가 현재 가리키고 있는 값(확정 전). UIDatePicker는 사용자가 휠을 실제로
+  // 굴려야만 onChange가 오기 때문에, 기본값을 그대로 두고 "확인"만 누르면 onChange가
+  // 한 번도 안 와서 폼에 반영이 안 되는 문제가 있었음 — "확인"을 누를 때 이 값을
+  // 무조건 커밋해서 해결(휠을 안 건드렸어도 화면에 보이는 값 = 이 값이므로 안전).
+  const [pendingDate, setPendingDate] = useState<Date | null>(null);
+  // 피커의 기본/최대 날짜로 쓸 "오늘" — 렌더마다 new Date()를 새로 만들면 피커에
+  // 매번 다른 값이 내려가서 스크롤 중인 선택이 리셋되므로 최초 1회만 계산해 고정한다.
+  const [today] = useState(() => new Date());
 
   const { mutateAsync: createReceipt } = useMutation({
     mutationFn: receiptRepository.postReceipt,
@@ -122,13 +150,17 @@ function ConfirmScreen() {
     if (values.category === '') return;
 
     setSubmitError(null);
-    createReceipt({
+    // 여기서 await하는 이유는 순전히 react-hook-form의 isSubmitting을 mutation이 끝날
+    // 때까지 true로 유지해서(=저장하기 버튼 로딩 상태) 저장 중 중복 클릭을 막기 위함.
+    // catch는 onError가 이미 처리한 rejection이 unhandled promise rejection으로
+    // 새어나가는 것만 막는 용도(에러 문구는 onError에서 이미 세팅됨).
+    await createReceipt({
       merchant: values.merchant,
       amount: Number(values.amount),
       category: values.category,
       date: values.date,
       rawText: rawText || undefined,
-    });
+    }).catch(() => {});
   };
 
   if (rawText === null) {
@@ -305,36 +337,112 @@ function ConfirmScreen() {
           />
         </View>
 
-        {/* 날짜 — 피커 없이 텍스트로 직접 고칠 수 있게(인식 실패해도 저장 가능해야 함). */}
+        {/* 날짜 — 네이티브 피커로 선택(오타/형식 오류 원천 차단). */}
         <View className="gap-1.5">
           <Text className="text-xs font-semibold text-gray">날짜</Text>
           <Controller
             control={control}
             name="date"
-            rules={{
-              required: '날짜를 입력해주세요',
-              pattern: {
-                value: DATE_PATTERN,
-                message: 'YYYY-MM-DD 형식으로 입력해주세요',
-              },
+            rules={{ required: '날짜를 선택해주세요' }}
+            render={({ field: { onChange, value } }) => {
+              const openPicker = () => {
+                if (Platform.OS === 'android') {
+                  // Android는 OS 다이얼로그를 직접 띄움 — 별도 Modal 불필요.
+                  // (DatePickerDialog는 "확인"을 누르면 건드리지 않았어도 항상 현재
+                  // 표시된 날짜로 onDateSet을 호출하므로 이쪽은 이 문제가 없음.)
+                  DateTimePickerAndroid.open({
+                    value: toPickerDate(value, today),
+                    mode: 'date',
+                    maximumDate: today,
+                    onChange: (event, selectedDate) => {
+                      if (event.type === 'set' && selectedDate) {
+                        onChange(formatPickerDate(selectedDate));
+                      }
+                    },
+                  });
+                } else {
+                  setPendingDate(toPickerDate(value, today));
+                  setDatePickerOpen(true);
+                }
+              };
+
+              return (
+                <>
+                  <Pressable
+                    testID="date-input"
+                    onPress={openPicker}
+                    className="flex-row items-center gap-2 rounded-xl border border-[#e8e6e1] bg-white px-3.5 py-3.5"
+                  >
+                    <Icon
+                      name="calendar-outline"
+                      size={16}
+                      colorClassName="accent-gray"
+                    />
+                    <Text
+                      className={`flex-1 text-sm font-semibold ${
+                        value ? 'text-black' : 'text-gray'
+                      }`}
+                    >
+                      {value
+                        ? dayjs(value).format('YYYY년 M월 D일')
+                        : '날짜를 선택해주세요'}
+                    </Text>
+                  </Pressable>
+
+                  {Platform.OS === 'ios' && (
+                    <Modal
+                      testID="date-picker-modal"
+                      visible={datePickerOpen}
+                      transparent
+                      animationType="slide"
+                      onRequestClose={() => setDatePickerOpen(false)}
+                    >
+                      <View className="flex-1 justify-end">
+                        <Pressable
+                          style={StyleSheet.absoluteFill}
+                          className="bg-black/40"
+                          onPress={() => setDatePickerOpen(false)}
+                        />
+                        <View className="rounded-t-3xl bg-white px-5 pb-8 pt-3">
+                          <View className="mb-2 items-center">
+                            <View className="h-1 w-9 rounded-full bg-[#e8e6e1]" />
+                          </View>
+                          <DateTimePicker
+                            testID="date-picker-native"
+                            value={pendingDate ?? toPickerDate(value, today)}
+                            mode="date"
+                            display="spinner"
+                            maximumDate={today}
+                            onValueChange={(event, selectedDate) => {
+                              if (selectedDate) {
+                                setPendingDate(selectedDate);
+                              }
+                            }}
+                          />
+                          <TouchableOpacity
+                            onPress={() => {
+                              // 휠을 한 번도 안 건드렸어도 화면에 보이는 값(pendingDate)을
+                              // 그대로 커밋 — onChange가 안 왔다고 값이 안 들어가면 안 됨.
+                              onChange(
+                                formatPickerDate(
+                                  pendingDate ?? toPickerDate(value, today),
+                                ),
+                              );
+                              setDatePickerOpen(false);
+                            }}
+                            className="mt-3 items-center rounded-2xl bg-primary py-3.5"
+                          >
+                            <Text className="text-base font-bold text-white">
+                              확인
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </Modal>
+                  )}
+                </>
+              );
             }}
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View className="flex-row items-center gap-2 rounded-xl border border-[#e8e6e1] bg-white px-3.5 py-3.5">
-                <Icon
-                  name="calendar-outline"
-                  size={16}
-                  colorClassName="accent-gray"
-                />
-                <TextInput
-                  testID="date-input"
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="YYYY-MM-DD"
-                  className="flex-1 text-sm font-semibold text-black"
-                />
-              </View>
-            )}
           />
           <ErrorMessage
             errors={errors}
