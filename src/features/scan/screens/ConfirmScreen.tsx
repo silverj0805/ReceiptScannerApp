@@ -6,11 +6,11 @@ import { Controller, useForm } from 'react-hook-form';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { StackParamList } from '@/app/navigation/types';
@@ -153,13 +153,12 @@ function ConfirmScreen() {
         <Pressable onPress={goBack} hitSlop={8}>
           <Icon name="chevron-back" size={22} colorClassName="accent-black" />
         </Pressable>
-        <Text className="text-[15px] font-bold text-black">
-          인식 결과 확인
-        </Text>
-        <View className="w-[22px]" />
+        <Text className="text-[15px] font-bold text-black">인식 결과 확인</Text>
+        <View className="w-5.5" />
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView
+        bottomOffset={20}
         contentContainerClassName="gap-3.5 px-5 pb-5"
         keyboardShouldPersistTaps="handled"
       >
@@ -357,7 +356,7 @@ function ConfirmScreen() {
             )}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <View className="border-t border-[#e8e6e1] bg-background px-5 pb-7 pt-4">
         <Pressable

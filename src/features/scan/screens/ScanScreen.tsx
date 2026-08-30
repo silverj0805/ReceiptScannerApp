@@ -5,7 +5,6 @@ import {
   Dimensions,
   Linking,
   Pressable,
-  StatusBar,
   StyleSheet,
   Text,
   View,
@@ -121,7 +120,6 @@ function ScanScreen() {
       edges={['top', 'bottom']}
       style={{ flex: 1, backgroundColor: '#141513' }}
     >
-      <StatusBar barStyle="light-content" />
       <View className="flex-1 bg-[#141513]">
         {device != null && (
           // Camera는 testID를 지원하지 않아서(CameraViewProps에 없음) View로 한 번 감쌈.
