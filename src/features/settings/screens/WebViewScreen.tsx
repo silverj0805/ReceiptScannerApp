@@ -1,20 +1,27 @@
 import type { RouteProp } from '@react-navigation/native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
 import type { StackParamList } from '@/app/navigation/types';
 import Icon from '@/shared/components/ui/Icon';
 
-// 개인정보처리방침/이용약관처럼 외부(노션 등)에 발행한 페이지를 보여줄 때 재사용하는
-// 범용 WebView 화면. route.params.url이 아직 없으면(빈 문자열) 페이지를 열지 않고
-// "준비 중" 안내만 보여준다 — 실제 URL은 노션 발행 후 constants/urls.ts에 채워 넣으면 됨.
-function WebViewScreen() {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<StackParamList>>();
+// 개인정보처리방침/이용약관처럼 외부(노션 등)에 발행한 페이지를 보여줄 때 재사용하는 범용 WebView 화면
+// route.params.url이 아직 없으면(빈 문자열) 페이지를 열지 않고 "준비 중" 안내만 보여준다
+function WebViewScreen({
+  navigation,
+}: {
+  navigation: NativeStackNavigationProp<StackParamList>;
+}) {
   const route = useRoute<RouteProp<StackParamList, 'WebView'>>();
   const { url, title } = route.params;
 
@@ -77,6 +84,7 @@ function WebViewScreen() {
           <WebView
             testID="webview"
             source={{ uri: url }}
+            cacheEnabled={false}
             onLoadStart={() => setIsLoading(true)}
             onLoadEnd={() => setIsLoading(false)}
             onError={() => {
