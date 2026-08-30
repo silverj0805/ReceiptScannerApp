@@ -16,6 +16,10 @@ const CATEGORIES: readonly CategoryInfo[] = [
   { id: 'etc', label: '기타', bg: '#ECEAE6', color: '#6A5F52' },
 ];
 
+export const CATEGORY_IDS: CategoryId[] = CATEGORIES.map(
+  category => category.id,
+);
+
 const CATEGORY_MAP = Object.fromEntries(
   CATEGORIES.map(category => [category.id, category]),
 ) as Record<CategoryId, CategoryInfo>;

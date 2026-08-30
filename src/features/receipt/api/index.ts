@@ -17,8 +17,20 @@ export const receiptRepository = (() => {
   return {
     getSummary: async () => client.get<ReceiptSummary>(`${BASE_URL}/summary`),
 
-    getList: async ({ take, skip }: { take: number; skip: number }) =>
-      client.get<Receipt[]>(BASE_URL, { params: { take, skip } }),
+    getList: async ({
+      take,
+      skip,
+      category,
+      month,
+    }: {
+      take: number;
+      skip: number;
+      category?: string; // 콤마로 구분한 카테고리 id 목록
+      month?: string; // YYYY-MM
+    }) =>
+      client.get<Receipt[]>(BASE_URL, {
+        params: { take, skip, category, month },
+      }),
 
     postReceipt: async (payload: CreateReceiptPayload) =>
       client.post<CreateReceiptResponse>(BASE_URL, payload),
