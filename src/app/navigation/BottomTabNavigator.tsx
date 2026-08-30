@@ -31,6 +31,8 @@ function BottomTabNavigator() {
           ...tabBarTokenStyle,
           height: 64 + insets.bottom,
           paddingBottom: insets.bottom,
+          paddingTop: 5,
+          paddingHorizontal: 20,
         },
       }}
     >

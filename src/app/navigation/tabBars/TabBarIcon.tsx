@@ -1,6 +1,6 @@
 import { Text } from 'react-native';
 
-import Icon from '@/shared/ui/Icon';
+import Icon from '@/shared/components/ui/Icon';
 
 type TabIconName = 'home-outline' | 'receipt-outline';
 
@@ -28,8 +28,8 @@ function TabBarLabel({ label, focused }: TabBarLabelProps) {
     <Text
       className={
         focused
-          ? 'text-[10px] font-bold text-primary'
-          : 'text-[10px] font-semibold text-gray'
+          ? 'text-[12px] font-bold text-primary'
+          : 'text-[12px] font-semibold text-gray'
       }
     >
       {label}

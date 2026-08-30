@@ -115,7 +115,7 @@ function HomeScreen({
           ) : undefined
         }
         onEndReached={handleEndReached}
-        onEndReachedThreshold={0.5}
+        onEndReachedThreshold={0.7}
         refreshing={refreshing}
         onRefresh={onRefresh}
         refreshControl={
