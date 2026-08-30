@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
 import {
-  Dimensions,
+  ActivityIndicator,
   Linking,
   Pressable,
   StyleSheet,
@@ -21,12 +21,14 @@ import {
 import type { RootStackParamList } from '@/app/navigation/types';
 import Icon from '@/shared/components/ui/Icon';
 
-const { width, height } = Dimensions.get('screen');
-
 function ScanScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [flashOn, setFlashOn] = useState(false);
+  // Camera가 마운트돼도 실제로 첫 프레임을 그리기 전까진 검정 화면만 보여서
+  // 준비 중임을 알 수 있는 스피너를 따로 보여준다. onError가 나도 무한 스피너로
+  // 안 남게 준비 완료로 취급한다(검정 화면이 낫지, 영원히 도는 스피너보단).
+  const [isCameraReady, setIsCameraReady] = useState(false);
 
   const { hasPermission, canRequestPermission, requestPermission } =
     useCameraPermission();
@@ -50,21 +52,21 @@ function ScanScreen() {
   };
 
   const capture = async () => {
-    // TODO(임시): 에뮬레이터는 카메라가 안 돼서 ConfirmScreen 확인용으로 실제 촬영을
-    // 우회함. require()로 번들 이미지를 바로 넘기면 (a) 반환값이 string이 아니라 숫자
-    // 에셋 ID라 타입이 안 맞고, (b) dev 모드에선 Metro 서버 http:// URL이 돼서 ML Kit의
-    // InputImage.fromFilePath()가 못 읽는다 — 그래서 여기선 그냥 없는 파일 경로만 넘기고,
-    // ConfirmScreen이 scanText 실패를 "인식 실패" 화면으로 우아하게 처리하는지만 확인.
-    // 실제 촬영 로직 복구되면 아래 블록으로 되돌릴 것.
-    // const photo = await photoOutput.capturePhoto(
-    //   { flashMode: flashOn ? 'on' : 'off' },
-    //   {},
-    // );
-    // const imageUri = await photo.saveToTemporaryFileAsync();
-    // photo.dispose();
+    const photo = await photoOutput.capturePhoto(
+      { flashMode: flashOn ? 'on' : 'off' },
+      {},
+    );
+    const path = await photo.saveToTemporaryFileAsync();
+    photo.dispose();
+    // react-native-vision-camera는 스킴 없는 순수 파일 경로를 반환한다
+    // (예: /data/user/0/com.silverj0805.receiptscannerapp/cache/VisionCamera_xxx.jpg).
+    // 네이티브 OCR 모듈은 Uri.parse(Kotlin)/URL(string:)(Swift) 둘 다 file:// 스킴이
+    // 있어야 실제 파일을 열 수 있어서, 없으면 이 시점에 붙여준다 — 안 붙이면
+    // scanText가 파일을 못 찾고 조용히 reject되어 "인식 실패" 화면으로 빠진다.
+    const imageUri = path.startsWith('file://') ? path : `file://${path}`;
     navigation.navigate('Stacks', {
       screen: 'Confirm',
-      params: { imageUri: 'temp-test-image-uri' },
+      params: { imageUri },
     });
   };
 
@@ -129,13 +131,28 @@ function ScanScreen() {
               device={device}
               isActive
               outputs={[photoOutput]}
+              onPreviewStarted={() => setIsCameraReady(true)}
+              onError={() => setIsCameraReady(true)}
             />
+          </View>
+        )}
+
+        {/* device가 아직 없거나(useCameraDevice 해석 전), Camera는 마운트됐지만
+            아직 첫 프레임을 못 그린 동안(onPreviewStarted 전) 검정 화면만 보이는 걸 막음. */}
+        {!isCameraReady && (
+          <View
+            testID="camera-loading"
+            pointerEvents="none"
+            style={StyleSheet.absoluteFill}
+            className="items-center justify-center bg-[#141513]"
+          >
+            <ActivityIndicator color="#ffffff" />
           </View>
         )}
 
         <View pointerEvents="box-none" className="absolute inset-x-0 top-0">
           {/* 헤더 */}
-          <View className="flex-row items-center justify-between p-5">
+          <View className="flex-row items-center justify-between p-5 bg-black">
             <Pressable
               testID="scan-close-button"
               onPress={close}
@@ -149,7 +166,8 @@ function ScanScreen() {
               />
             </Pressable>
             <Text className="text-sm font-bold text-white">영수증 스캔</Text>
-            <Pressable
+            <View className="h-9 w-9" />
+            {/* <Pressable
               onPress={toggleFlash}
               hitSlop={8}
               className={
@@ -163,11 +181,11 @@ function ScanScreen() {
                 size={18}
                 colorClassName={flashOn ? 'accent-[#f4c453]' : 'accent-white'}
               />
-            </Pressable>
+            </Pressable> */}
           </View>
 
           {/* 프레임 가이드 + 안내 문구  */}
-          <View pointerEvents="none" className="mt-5 items-center gap-3">
+          {/* <View pointerEvents="none" className="mt-5 items-center gap-3">
             <View className="rounded-full bg-[rgba(0,0,0,0.45)] px-4 py-2">
               <Text className="text-xs font-semibold text-white">
                 영수증을 프레임 안에 맞춰주세요
@@ -177,11 +195,11 @@ function ScanScreen() {
               className="rounded-2xl border-2 border-dashed border-[rgba(255,255,255,0.55)]"
               style={{ width: width * 0.88, height: height * 0.55 }}
             />
-          </View>
+          </View> */}
         </View>
 
         {/* 하단 컨트롤 */}
-        <View className="absolute inset-x-0 bottom-0 flex-row items-center justify-between px-7 pb-10 pt-5">
+        <View className="absolute inset-x-0 bottom-0 flex-row items-center justify-between px-7 pb-10 pt-5 bg-black">
           <Pressable
             testID="scan-gallery-button"
             onPress={openGallery}

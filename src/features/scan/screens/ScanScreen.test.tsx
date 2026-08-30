@@ -25,14 +25,22 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
-// Camera는 네이티브 프리뷰 뷰라서 Jest에서 그릴 수 없어 문자열 host 컴포넌트로 대체.
+// Camera는 네이티브 프리뷰 뷰라서 Jest에서 그릴 수 없어 View로 대체.
+// 실제 Camera는 testID를 지원 안 하지만(CameraViewProps에 없음), 목에서는 받은 props를
+// 그대로 View에 넘겨서 onPreviewStarted/onError를 fireEvent(getByTestId('camera'), ...)로
+// 트리거할 수 있게 한다.
 // usePhotoOutput/useCameraDevice/useCameraPermission도 전부 네이티브 값을 반환하므로 목 처리.
-jest.mock('react-native-vision-camera', () => ({
-  Camera: 'Camera',
-  useCameraDevice: jest.fn(),
-  useCameraPermission: jest.fn(),
-  usePhotoOutput: jest.fn(),
-}));
+jest.mock('react-native-vision-camera', () => {
+  const { View } = require('react-native');
+  return {
+    Camera: (props: Record<string, unknown>) => (
+      <View testID="camera" {...props} />
+    ),
+    useCameraDevice: jest.fn(),
+    useCameraPermission: jest.fn(),
+    usePhotoOutput: jest.fn(),
+  };
+});
 
 // 갤러리 피커도 네이티브 UI를 띄우므로 목 처리.
 jest.mock('react-native-image-picker', () => ({
@@ -134,6 +142,36 @@ test('카메라 권한이 있으면 카메라 프리뷰를 보여준다', async 
   expect(screen.getByTestId('camera-preview')).toBeTruthy();
 });
 
+test('카메라 프리뷰가 첫 프레임을 그리기 전까지는 로딩 스피너를 보여준다', async () => {
+  setPermission({ hasPermission: true, canRequestPermission: false });
+
+  await render(<ScanScreen />);
+
+  expect(screen.getByTestId('camera-loading')).toBeTruthy();
+});
+
+test('카메라 프리뷰가 시작되면 로딩 스피너가 사라진다', async () => {
+  setPermission({ hasPermission: true, canRequestPermission: false });
+
+  await render(<ScanScreen />);
+  await fireEvent(screen.getByTestId('camera'), 'previewStarted');
+
+  await waitFor(() => {
+    expect(screen.queryByTestId('camera-loading')).toBeNull();
+  });
+});
+
+test('카메라 초기화에 실패해도 로딩 스피너가 계속 뜨지 않는다', async () => {
+  setPermission({ hasPermission: true, canRequestPermission: false });
+
+  await render(<ScanScreen />);
+  await fireEvent(screen.getByTestId('camera'), 'error');
+
+  await waitFor(() => {
+    expect(screen.queryByTestId('camera-loading')).toBeNull();
+  });
+});
+
 test('닫기 버튼을 누르면 이전 화면으로 돌아간다', async () => {
   setPermission({ hasPermission: true, canRequestPermission: false });
 
@@ -144,11 +182,7 @@ test('닫기 버튼을 누르면 이전 화면으로 돌아간다', async () => 
   expect(mockGoBack).toHaveBeenCalled();
 });
 
-test('촬영 버튼을 누르면 확인 화면으로 이동한다', async () => {
-  // TODO: ScanScreen.tsx의 capture()가 에뮬레이터 카메라 미지원 때문에
-  // capturePhoto/saveToTemporaryFileAsync/dispose 호출을 우회하고 고정 테스트
-  // imageUri로 바로 Confirm으로 넘어가게 돼있음(주석 참고). 실제 촬영 로직이
-  // 복구되면 이 테스트도 capturePhoto 등 호출을 검증하는 형태로 되돌릴 것.
+test('촬영 버튼을 누르면 사진을 찍어서 확인 화면으로 이동한다', async () => {
   setPermission({ hasPermission: true, canRequestPermission: false });
 
   await render(<ScanScreen />);
@@ -158,10 +192,36 @@ test('촬영 버튼을 누르면 확인 화면으로 이동한다', async () => 
   await waitFor(() => {
     expect(mockNavigate).toHaveBeenCalledWith('Stacks', {
       screen: 'Confirm',
-      params: { imageUri: 'temp-test-image-uri' },
+      params: { imageUri: 'file:///tmp/photo.jpg' },
     });
   });
-  expect(mockCapturePhoto).not.toHaveBeenCalled();
+  expect(mockCapturePhoto).toHaveBeenCalledWith({ flashMode: 'off' }, {});
+  expect(mockSaveToTemporaryFileAsync).toHaveBeenCalled();
+  expect(mockDispose).toHaveBeenCalled();
+});
+
+test('촬영 결과 경로에 스킴이 없으면 file:// 스킴을 붙여서 넘긴다', async () => {
+  // 실기기(Android)에서 실제로 오는 값 그대로: 스킴 없는 순수 파일 경로.
+  // 스킴이 없으면 네이티브 OCR 모듈이 파일을 못 찾고 조용히 reject되기 때문에,
+  // capture()가 여기서 file://를 붙여주는지 검증한다.
+  mockSaveToTemporaryFileAsync.mockResolvedValue(
+    '/data/user/0/com.silverj0805.receiptscannerapp/cache/VisionCamera_1.jpg',
+  );
+  setPermission({ hasPermission: true, canRequestPermission: false });
+
+  await render(<ScanScreen />);
+
+  await fireEvent.press(screen.getByTestId('scan-capture-button'));
+
+  await waitFor(() => {
+    expect(mockNavigate).toHaveBeenCalledWith('Stacks', {
+      screen: 'Confirm',
+      params: {
+        imageUri:
+          'file:///data/user/0/com.silverj0805.receiptscannerapp/cache/VisionCamera_1.jpg',
+      },
+    });
+  });
 });
 
 test('갤러리에서 사진을 선택하면 확인 화면으로 이동한다', async () => {
