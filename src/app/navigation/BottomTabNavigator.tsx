@@ -6,13 +6,17 @@ import HomeScreen from '@/features/receipt/screens/home';
 import ReceiptListScreen from '@/features/receipt/screens/ReceiptListScreen';
 import WriteRedirectScreen from '@/features/receipt/screens/WriteRedirectScreen';
 import ScanScreen from '@/features/scan/screens/ScanScreen';
+import SettingsRedirectScreen from '@/features/settings/screens/SettingsRedirectScreen';
 
 import ScanTabButton from './tabBars/ScanTabButton';
+import SettingsTabButton from './tabBars/SettingsTabButton';
 import {
   renderHomeIcon,
   renderHomeLabel,
   renderReceiptListIcon,
   renderReceiptListLabel,
+  renderSettingsIcon,
+  renderSettingsLabel,
   renderWriteIcon,
   renderWriteLabel,
 } from './tabBars/TabBarIcon';
@@ -74,6 +78,16 @@ function BottomTabNavigator() {
           title: '내역',
           tabBarIcon: renderReceiptListIcon,
           tabBarLabel: renderReceiptListLabel,
+        }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsRedirectScreen}
+        options={{
+          title: '설정',
+          tabBarIcon: renderSettingsIcon,
+          tabBarLabel: renderSettingsLabel,
+          tabBarButton: SettingsTabButton,
         }}
       />
     </Tab.Navigator>

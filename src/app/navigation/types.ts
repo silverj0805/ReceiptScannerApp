@@ -8,14 +8,15 @@ export type RootStackParamList = {
   Stacks: NavigatorScreenParams<StackParamList>;
 };
 
-// 하단 탭에 귀속된 4개 스크린 — 홈/기록/카메라/내역.
-// Write는 실제 화면이 아니라 탭바 버튼 프레스를 가로채서 Stacks/Confirm으로 바로
-// 보내는 용도라 화면 자체는 없음(WriteTabButton/WriteRedirectScreen 참고).
+// 하단 탭에 귀속된 5개 스크린 — 홈/기록/카메라/내역/설정.
+// Write·Settings는 실제 화면이 아니라 탭바 버튼 프레스를 가로채서 Stacks의 화면으로
+// 바로 보내는 용도라 화면 자체는 없음(WriteTabButton/SettingsTabButton, TabRedirectScreen 참고).
 export type BottomTabParamList = {
   Home: undefined;
   Write: undefined;
   Scan: undefined;
   ReceiptList: undefined;
+  Settings: undefined;
 };
 
 // 탭 네비게이터 위에 push되는 스택 스크린
@@ -25,4 +26,5 @@ export type StackParamList = {
   // 이 값을 폼 기본값으로 바로 채운, "생성이 아닌 수정" 모드로 동작한다.
   Confirm: { imageUri?: string; info?: Receipt };
   Detail: { receiptId: string };
+  Settings: undefined;
 };

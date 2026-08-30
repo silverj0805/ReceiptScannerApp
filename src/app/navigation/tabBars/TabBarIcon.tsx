@@ -2,7 +2,11 @@ import { Text } from 'react-native';
 
 import Icon from '@/shared/components/ui/Icon';
 
-type TabIconName = 'home-outline' | 'receipt-outline' | 'create-outline';
+type TabIconName =
+  | 'home-outline'
+  | 'receipt-outline'
+  | 'create-outline'
+  | 'settings-outline';
 
 type TabBarIconProps = {
   name: TabIconName;
@@ -54,4 +58,10 @@ export const renderWriteIcon = ({ focused }: { focused: boolean }) => (
 );
 export const renderWriteLabel = ({ focused }: { focused: boolean }) => (
   <TabBarLabel label="기록" focused={focused} />
+);
+export const renderSettingsIcon = ({ focused }: { focused: boolean }) => (
+  <TabBarIcon name="settings-outline" focused={focused} />
+);
+export const renderSettingsLabel = ({ focused }: { focused: boolean }) => (
+  <TabBarLabel label="설정" focused={focused} />
 );

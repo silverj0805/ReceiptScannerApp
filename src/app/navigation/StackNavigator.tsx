@@ -2,6 +2,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import ReceiptDetailScreen from '@/features/receipt/screens/ReceiptDetailScreen';
 import ConfirmScreen from '@/features/scan/screens/ConfirmScreen';
+import LicenseScreen from '@/features/settings/screens/LicenseScreen';
+import SettingsScreen from '@/features/settings/screens/SettingsScreen';
 
 import type { StackParamList } from './types';
 
@@ -16,6 +18,8 @@ export default function StackNavigator() {
     >
       <Stack.Screen name="Confirm" component={ConfirmScreen} />
       <Stack.Screen name="Detail" component={ReceiptDetailScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="License" component={LicenseScreen} />
     </Stack.Navigator>
   );
 }
