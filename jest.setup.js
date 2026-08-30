@@ -7,6 +7,18 @@ import { server } from './src/mocks/server';
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
+// react-native-bootsplash 공식 테스팅 가이드: 네이티브 모듈이라 Jest 환경에 없으므로
+// hide()가 즉시 resolve되는 목으로 대체.
+jest.mock('react-native-bootsplash', () => ({
+  hide: jest.fn().mockResolvedValue(undefined),
+  isVisible: jest.fn(),
+  useHideAnimation: jest.fn().mockReturnValue({
+    container: {},
+    logo: { source: 0 },
+    brand: { source: 0 },
+  }),
+}));
+
 // MSW: 모든 테스트가 시작되기 전에 서버(요청 가로채기)를 켜고, 각 테스트 사이에
 // 핸들러를 초기화(한 테스트에서 server.use()로 추가한 핸들러가 다음 테스트로 새지 않게)하고,
 // 전체 테스트가 끝나면 끈다.

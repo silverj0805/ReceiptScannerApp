@@ -32,6 +32,7 @@
     "react": "19.2.3",
     "react-hook-form": "^7.86.0",
     "react-native": "0.87.0",
+    "react-native-bootsplash": "^7.3.2",
     "react-native-config": "^1.7.2",
     "react-native-device-info": "^15.0.2",
     "react-native-error-boundary": "^3.1.0",

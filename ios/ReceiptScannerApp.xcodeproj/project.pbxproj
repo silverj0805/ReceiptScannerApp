@@ -12,6 +12,8 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		AD97E478CBC1D444185F5F0E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4CB81B9AA2BD3EFBCF9329BA /* GoogleService-Info.plist */; };
+		B6FE9EA88D9847BCA1AECD19 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B03ED5AE672345FDB3C4B2A9 /* BootSplash.storyboard */; };
+		DD13264BF2764F53884C4551 /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9A8F65F683C64F849CAFA6E4 /* Colors.xcassets */; };
 		F742FD3B26020EBD83B926E7 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		F7C27C9856ACC98AA46D9F0D /* ReceiptScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6C5CB5BF18601364C28511 /* ReceiptScannerModule.swift */; };
 		FF91BF3C1B8847731E1C89B4 /* ReceiptScannerModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = 863DF91ECFF6F615FD41C7FC /* ReceiptScannerModule.mm */; };
@@ -30,6 +32,8 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = ReceiptScannerApp/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ReceiptScannerApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		863DF91ECFF6F615FD41C7FC /* ReceiptScannerModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; path = ReceiptScannerApp/ReceiptScannerModule.mm; sourceTree = "<group>"; };
+		9A8F65F683C64F849CAFA6E4 /* Colors.xcassets */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = folder.assetcatalog; name = Colors.xcassets; path = ReceiptScannerApp/Colors.xcassets; sourceTree = "<group>"; };
+		B03ED5AE672345FDB3C4B2A9 /* BootSplash.storyboard */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = BootSplash.storyboard; path = ReceiptScannerApp/BootSplash.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -56,6 +60,8 @@
 				0C6C5CB5BF18601364C28511 /* ReceiptScannerModule.swift */,
 				863DF91ECFF6F615FD41C7FC /* ReceiptScannerModule.mm */,
 				4CB81B9AA2BD3EFBCF9329BA /* GoogleService-Info.plist */,
+				B03ED5AE672345FDB3C4B2A9 /* BootSplash.storyboard */,
+				9A8F65F683C64F849CAFA6E4 /* Colors.xcassets */,
 			);
 			name = ReceiptScannerApp;
 			sourceTree = "<group>";
@@ -173,6 +179,8 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				F742FD3B26020EBD83B926E7 /* PrivacyInfo.xcprivacy in Resources */,
 				AD97E478CBC1D444185F5F0E /* GoogleService-Info.plist in Resources */,
+				B6FE9EA88D9847BCA1AECD19 /* BootSplash.storyboard in Resources */,
+				DD13264BF2764F53884C4551 /* Colors.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -3,6 +3,7 @@ import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
 import Firebase
+import RNBootSplash
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -39,6 +40,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
+  // react-native-bootsplash 공식 가이드: RCTRootView가 만들어지는 시점(customize)에
+  // BootSplash.storyboard를 얹어서, JS 번들 로딩이 끝날 때까지 네이티브 스플래시가
+  // 화면을 덮고 있게 한다. 실제로 가리는 건 BootSplash.hide()가 호출될 때(RootNavigator).
+  override func customize(_ rootView: RCTRootView) {
+    super.customize(rootView)
+    RNBootSplash.initWithStoryboard("BootSplash", rootView: rootView)
+  }
+
   override func sourceURL(for bridge: RCTBridge) -> URL? {
     self.bundleURL()
   }

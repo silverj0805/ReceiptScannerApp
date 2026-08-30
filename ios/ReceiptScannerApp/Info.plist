@@ -36,18 +36,15 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
-	<!-- 영수증 스캔용 카메라(react-native-vision-camera) 촬영 권한. 동영상/오디오는 안 써서
-	     NSMicrophoneUsageDescription은 추가하지 않음. -->
+	<string></string>
 	<key>NSCameraUsageDescription</key>
 	<string>영수증을 촬영해서 스캔하려면 카메라 접근 권한이 필요해요.</string>
-	<!-- 갤러리에서 영수증 사진을 가져오기 위한 권한(react-native-image-picker). -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>갤러리에서 영수증 사진을 가져오려면 사진 라이브러리 접근 권한이 필요해요.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
+	<string>BootSplash</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>
