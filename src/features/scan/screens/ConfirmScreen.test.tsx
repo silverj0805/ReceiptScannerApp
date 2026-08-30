@@ -103,6 +103,48 @@ test('인식에 성공하면 점포명/총액/주문일시로 폼을 채운다',
   });
 });
 
+test('품명 입력란은 비어있는 채로 시작하고, 비어있어도 저장할 수 있다(옵셔널)', async () => {
+  mockedScanText.mockResolvedValue(RAW_TEXT_SUCCESS);
+
+  await renderConfirmScreen();
+  await waitFor(() => {
+    expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
+  });
+  expect(screen.getByTestId('item-name-input').props.value).toBe('');
+
+  await fireEvent.press(screen.getByTestId('category-food'));
+
+  await waitFor(() => {
+    expect(
+      screen.getByTestId('save-button').props.accessibilityState.disabled,
+    ).toBe(false);
+  });
+});
+
+test('품명을 입력하면 저장 시 payload에 포함된다', async () => {
+  mockedScanText.mockResolvedValue(RAW_TEXT_SUCCESS);
+  mockedPostReceipt.mockResolvedValue({});
+
+  await renderConfirmScreen();
+  await waitFor(() => {
+    expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
+  });
+
+  await fireEvent.changeText(
+    screen.getByTestId('item-name-input'),
+    '아메리카노 Tall',
+  );
+  await fireEvent.press(screen.getByTestId('category-food'));
+  await fireEvent.press(screen.getByText('저장하기'));
+
+  await waitFor(() => {
+    expect(mockedPostReceipt).toHaveBeenCalledWith(
+      expect.objectContaining({ itemName: '아메리카노 Tall' }),
+      expect.anything(),
+    );
+  });
+});
+
 test('인식된 원문 토글을 누르면 원문을 펼치고 접는다', async () => {
   mockedScanText.mockResolvedValue(RAW_TEXT_SUCCESS);
 
@@ -465,6 +507,18 @@ describe('수정 모드 (route.params.info가 있을 때)', () => {
       screen.getByTestId('category-food').props.accessibilityState,
     ).toMatchObject({ selected: true });
     expect(mockedScanText).not.toHaveBeenCalled();
+  });
+
+  test('기존 값에 품명이 있으면 폼에 채워져 있다', async () => {
+    mockedUseRoute.mockReturnValue({
+      params: { info: { ...EDIT_RECEIPT, itemName: '아메리카노 Tall' } },
+    });
+
+    await renderConfirmScreen();
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('아메리카노 Tall')).toBeTruthy();
+    });
   });
 
   test('헤더가 "영수증 수정"이고, 촬영 관련 UI는 보이지 않는다', async () => {

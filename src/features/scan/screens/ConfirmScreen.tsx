@@ -48,6 +48,8 @@ const CATEGORY_IDS: CategoryId[] = [
 
 interface ConfirmFormValues {
   merchant: string;
+  // 옵셔널 필드 — 빈 문자열이어도 저장 가능(onSubmit에서 undefined로 변환해서 보냄).
+  itemName: string;
   amount: string;
   date: string;
   // ''(빈 값) = 아직 선택 안 함. 저장하기를 누르기 전에도 반드시 사용자가 직접 골라야 함.
@@ -56,6 +58,7 @@ interface ConfirmFormValues {
 
 const DEFAULT_VALUES: ConfirmFormValues = {
   merchant: '',
+  itemName: '',
   amount: '',
   date: '',
   category: '',
@@ -95,6 +98,7 @@ function ConfirmScreen() {
   const [rawText, setRawText] = useState<string | null>(
     isEditMode ? info.rawText ?? '' : isDirectEntry ? '' : null,
   );
+  console.log('🚀 ~ ConfirmScreen ~ rawText:', rawText);
   const [manualEntry, setManualEntry] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -153,6 +157,7 @@ function ConfirmScreen() {
     defaultValues: isEditMode
       ? {
           merchant: info.merchant,
+          itemName: info.itemName ?? '',
           amount: String(info.amount),
           date: info.date,
           category: info.category,
@@ -174,6 +179,8 @@ function ConfirmScreen() {
         const parsed = parseReceiptText(text);
         reset({
           merchant: parsed.merchant ?? '',
+          // 품명은 아직 자동 인식 대상이 아님 — 항상 빈 값에서 시작, 필요하면 직접 입력.
+          itemName: '',
           amount: parsed.amount != null ? String(parsed.amount) : '',
           date: parsed.date ?? '',
           // 자동 인식 결과라도 카테고리는 사용자가 직접 확인하고 고르게 함.
@@ -198,6 +205,7 @@ function ConfirmScreen() {
     setSubmitError(null);
     const payload: CreateReceiptPayload = {
       merchant: values.merchant,
+      itemName: values.itemName || undefined,
       amount: Number(values.amount),
       category: values.category,
       date: values.date,
@@ -351,7 +359,7 @@ function ConfirmScreen() {
 
         {/* 가맹점명 */}
         <View className="gap-1.5">
-          <Text className="text-xs font-semibold text-gray">가맹점명</Text>
+          <Text className="text-xs font-semibold text-gray">*가맹점명</Text>
           <Controller
             control={control}
             name="merchant"
@@ -376,9 +384,28 @@ function ConfirmScreen() {
           />
         </View>
 
+        {/* 품명 — 옵셔널, 필수 필드가 아니라 rules 없음 */}
+        <View className="gap-1.5">
+          <Text className="text-xs font-semibold text-gray">품명</Text>
+          <Controller
+            control={control}
+            name="itemName"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                testID="item-name-input"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                placeholder="품명을 입력해주세요 (선택)"
+                className="rounded-xl border border-[#e8e6e1] bg-white px-3.5 py-3.5 text-sm font-semibold text-black"
+              />
+            )}
+          />
+        </View>
+
         {/* 금액 */}
         <View className="gap-1.5">
-          <Text className="text-xs font-semibold text-gray">금액</Text>
+          <Text className="text-xs font-semibold text-gray">*금액</Text>
           <Controller
             control={control}
             name="amount"
@@ -406,7 +433,7 @@ function ConfirmScreen() {
 
         {/* 날짜 — 네이티브 피커로 선택(오타/형식 오류 원천 차단). */}
         <View className="gap-1.5">
-          <Text className="text-xs font-semibold text-gray">날짜</Text>
+          <Text className="text-xs font-semibold text-gray">*날짜</Text>
           <Controller
             control={control}
             name="date"
@@ -522,13 +549,13 @@ function ConfirmScreen() {
 
         {/* 카테고리 */}
         <View className="gap-2">
-          <Text className="text-xs font-semibold text-gray">카테고리</Text>
+          <Text className="text-xs font-semibold text-gray">*카테고리</Text>
           <Controller
             control={control}
             name="category"
             rules={{ required: '카테고리를 선택해주세요' }}
             render={({ field: { onChange, value } }) => (
-              <View className="flex-row flex-wrap gap-2">
+              <View className="flex-row flex-wrap gap-1">
                 {CATEGORY_IDS.map(id => {
                   const categoryInfo = getCategoryInfo(id);
                   const selected = value === id;
