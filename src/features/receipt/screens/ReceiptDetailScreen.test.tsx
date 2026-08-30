@@ -18,6 +18,7 @@ import ReceiptDetailScreen from './ReceiptDetailScreen';
 
 // ConfirmScreen.test.tsx와 동일한 이유로 useNavigation/useRoute 훅을 목 처리.
 const mockGoBack = jest.fn();
+const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: jest.fn(),
@@ -75,7 +76,10 @@ const FIXTURE: Receipt = {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockedUseNavigation.mockReturnValue({ goBack: mockGoBack });
+  mockedUseNavigation.mockReturnValue({
+    goBack: mockGoBack,
+    navigate: mockNavigate,
+  });
   mockedUseRoute.mockReturnValue({ params: { receiptId: '1' } });
   server.use(
     http.get('*/receipts/:id', ({ params }) => {
@@ -154,6 +158,17 @@ test('뒤로가기 버튼을 누르면 이전 화면으로 돌아간다', async 
   await fireEvent.press(screen.getByTestId('detail-back-button'));
 
   expect(mockGoBack).toHaveBeenCalled();
+});
+
+test('수정 버튼을 누르면 ConfirmScreen으로 영수증 정보를 들고 이동한다', async () => {
+  await renderDetailScreen();
+  await waitFor(() => {
+    expect(screen.getByTestId('detail-merchant')).toBeTruthy();
+  });
+
+  await fireEvent.press(screen.getByTestId('detail-edit-button'));
+
+  expect(mockNavigate).toHaveBeenCalledWith('Confirm', { info: FIXTURE });
 });
 
 test('존재하지 않거나 다른 기기 소유의 영수증이면(404) 안내 문구를 보여준다', async () => {

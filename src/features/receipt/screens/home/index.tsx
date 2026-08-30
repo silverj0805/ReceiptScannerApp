@@ -16,11 +16,11 @@ import type {
   RootStackParamList,
 } from '@/app/navigation/types';
 import type { Receipt } from '@/features/receipt/api/types/receipt';
-import EmptyReceipt from '@/features/receipt/components/EmptyReceipt';
+import EmptyReceipt from '@/features/receipt/components/recentReceipts/EmptyReceipt';
 import ReceiptItem from '@/features/receipt/components/recentReceipts/ReceiptItem';
 import ReceiptItemSkeleton from '@/features/receipt/components/recentReceipts/ReceiptItemSkeleton';
 
-import { PAGE_SIZE, receiptQueryFactory, receiptRepository } from '../../api';
+import { receiptQueryFactory, receiptRepository } from '../../api';
 import ListHeaderComponent from '../../components/recentReceipts/ListHeaderComponent';
 
 const SKELETON_ROW_COUNT = 4;
@@ -32,6 +32,8 @@ type ListRow = Receipt | SkeletonRow;
 const isSkeletonRow = (row: ListRow): row is SkeletonRow =>
   'skeletonKey' in row;
 
+const PAGE_SIZE = 4;
+
 const ItemSeparatorComponent = () => <View className="h-4" />;
 
 function HomeScreen({
@@ -41,6 +43,7 @@ function HomeScreen({
 }) {
   const backgroundColor = useCSSVariable('--color-background');
   const primaryColor = useCSSVariable('--color-primary');
+
   const scrollRef = useRef<FlatList<ListRow> | null>(null);
   useScrollToTop(scrollRef);
 

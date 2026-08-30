@@ -1,5 +1,6 @@
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -26,7 +27,7 @@ function ReceiptDetailScreen() {
   const queryClient = useQueryClient();
   const backgroundColor = useCSSVariable('--color-background');
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<StackParamList>>();
   const route = useRoute<RouteProp<StackParamList, 'Detail'>>();
   const { receiptId } = route.params;
 
@@ -111,6 +112,7 @@ function ReceiptDetailScreen() {
 
   const receipt = detailQuery.data.data;
   const info = getCategoryInfo(receipt.category);
+  const goToEdit = () => navigation.navigate('Confirm', { info: receipt });
 
   return (
     <SafeAreaView
@@ -197,10 +199,13 @@ function ReceiptDetailScreen() {
           </Text>
         )}
         <View className="flex-row gap-2.5">
-          {/* 수정 — API 스펙이 아직 없어서 UI만 배치, 동작은 추후 연결 */}
-          <View className="flex-1 items-center rounded-2xl border border-[#e8e6e1] bg-white py-3.5">
+          <TouchableOpacity
+            testID="detail-edit-button"
+            onPress={goToEdit}
+            className="flex-1 items-center rounded-2xl border border-[#e8e6e1] bg-white py-3.5"
+          >
             <Text className="text-sm font-bold text-black">수정</Text>
-          </View>
+          </TouchableOpacity>
           <TouchableOpacity
             testID="detail-delete-button"
             disabled={deleteMutation.isPending}

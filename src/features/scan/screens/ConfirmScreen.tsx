@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCSSVariable } from 'uniwind';
 
 import type {
   RootStackParamList,
@@ -29,6 +30,7 @@ import type {
 } from '@/app/navigation/types';
 import { receiptQueryFactory, receiptRepository } from '@/features/receipt/api';
 import type { CategoryId } from '@/features/receipt/api/types/category';
+import type { CreateReceiptPayload } from '@/features/receipt/api/types/receipt';
 import Icon from '@/shared/components/ui/Icon';
 import { getCategoryInfo } from '@/shared/utils/category';
 import NativeReceiptScanner from '@specs/NativeReceiptScanner';
@@ -72,15 +74,23 @@ const toPickerDate = (value: string, today: Date) =>
 const formatPickerDate = (date: Date) => dayjs(date).format('YYYY-MM-DD');
 
 function ConfirmScreen() {
+  const backgroundColor = useCSSVariable('--color-background');
   const queryClient = useQueryClient();
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<StackParamList, 'Confirm'>>();
-  const { imageUri } = route.params;
+  const { imageUri, info } = route.params;
+  // info가 있으면 ReceiptDetailScreen의 "수정"에서 넘어온 것 — 새로 스캔하지 않고
+  // 이미 저장돼 있는 값을 폼에 바로 채워서 보여준다.
+  const isEditMode = info != null;
+  const editingReceiptId = info ? String(info.id) : undefined;
 
   // null = 인식 중, ''(빈 문자열) = 인식 실패, 그 외 = 인식된 원문.
-  const [rawText, setRawText] = useState<string | null>(null);
+  // 수정 모드는 스캔을 안 하므로 로딩/실패 화면을 절대 거치지 않고 바로 폼을 보여준다.
+  const [rawText, setRawText] = useState<string | null>(
+    isEditMode ? (info.rawText ?? '') : null,
+  );
   const [manualEntry, setManualEntry] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -108,18 +118,50 @@ function ConfirmScreen() {
     },
   });
 
+  const { mutateAsync: updateReceipt } = useMutation({
+    mutationFn: (payload: CreateReceiptPayload) =>
+      receiptRepository.patchReceipt(editingReceiptId ?? '', payload),
+    onSuccess: () => {
+      if (editingReceiptId) {
+        queryClient.invalidateQueries({
+          queryKey: receiptQueryFactory.detail(editingReceiptId).queryKey,
+        });
+      }
+      queryClient.invalidateQueries({
+        queryKey: receiptQueryFactory.list().queryKey,
+      });
+      // Detail에서 push된 화면이라 (Confirm -> Detail 순서로 스택에 쌓여있음)
+      // 한 번만 돌아가면 그 Detail로 정확히 돌아간다 — create처럼 Home으로
+      // 한 번 더 이동할 필요가 없음.
+      navigation.goBack();
+    },
+    onError: () => {
+      setSubmitError('수정에 실패했어요. 다시 시도해주세요.');
+    },
+  });
+
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors, isValid, isSubmitting },
   } = useForm<ConfirmFormValues>({
-    defaultValues: DEFAULT_VALUES,
+    defaultValues: isEditMode
+      ? {
+          merchant: info.merchant,
+          amount: String(info.amount),
+          date: info.date,
+          category: info.category,
+        }
+      : DEFAULT_VALUES,
     // 필드가 바뀔 때마다 다시 검증해서 저장하기 버튼 활성화 여부가 실시간으로 반영되게 함.
     mode: 'onChange',
   });
 
   useEffect(() => {
+    if (isEditMode) return; // 수정 모드는 이미 값이 다 있으니 스캔 불필요.
+    if (!imageUri) return; // 방어적 처리 — 스캔 플로우면 항상 있어야 함.
+
     NativeReceiptScanner.scanText(imageUri)
       .then(text => {
         setRawText(text);
@@ -140,7 +182,7 @@ function ConfirmScreen() {
         // 죽은 것처럼 보이므로, 빈 문자열로 취급해서 기존 "인식 실패" 화면으로 보냄.
         setRawText('');
       });
-  }, [imageUri, reset]);
+  }, [imageUri, isEditMode, reset]);
 
   const goBack = () => navigation.goBack();
   const enterManually = () => setManualEntry(true);
@@ -150,17 +192,22 @@ function ConfirmScreen() {
     if (values.category === '') return;
 
     setSubmitError(null);
-    // 여기서 await하는 이유는 순전히 react-hook-form의 isSubmitting을 mutation이 끝날
-    // 때까지 true로 유지해서(=저장하기 버튼 로딩 상태) 저장 중 중복 클릭을 막기 위함.
-    // catch는 onError가 이미 처리한 rejection이 unhandled promise rejection으로
-    // 새어나가는 것만 막는 용도(에러 문구는 onError에서 이미 세팅됨).
-    await createReceipt({
+    const payload: CreateReceiptPayload = {
       merchant: values.merchant,
       amount: Number(values.amount),
       category: values.category,
       date: values.date,
       rawText: rawText || undefined,
-    }).catch(() => {});
+    };
+    // 여기서 await하는 이유는 순전히 react-hook-form의 isSubmitting을 mutation이 끝날
+    // 때까지 true로 유지해서(=저장하기 버튼 로딩 상태) 저장 중 중복 클릭을 막기 위함.
+    // catch는 onError가 이미 처리한 rejection이 unhandled promise rejection으로
+    // 새어나가는 것만 막는 용도(에러 문구는 onError에서 이미 세팅됨).
+    if (isEditMode) {
+      await updateReceipt(payload).catch(() => {});
+    } else {
+      await createReceipt(payload).catch(() => {});
+    }
   };
 
   if (rawText === null) {
@@ -174,7 +221,9 @@ function ConfirmScreen() {
     );
   }
 
-  const isRecognitionFailed = rawText === '' && !manualEntry;
+  // 수정 모드는 스캔을 안 하므로(rawText가 애초에 null이 아님) 여기 도달할 일이 없지만,
+  // rawText가 우연히 빈 값이어도 "인식 실패" 화면(스캔 전용 문구)이 뜨면 안 되므로 명시적으로 막는다.
+  const isRecognitionFailed = !isEditMode && rawText === '' && !manualEntry;
 
   if (isRecognitionFailed) {
     return (
@@ -213,14 +262,15 @@ function ConfirmScreen() {
   return (
     <SafeAreaView
       edges={['top', 'bottom']}
-      style={{ flex: 1 }}
-      className="bg-background"
+      style={{ flex: 1, backgroundColor }}
     >
       <View className="flex-row items-center justify-between p-5">
         <Pressable onPress={goBack} hitSlop={8}>
           <Icon name="chevron-back" size={22} colorClassName="accent-black" />
         </Pressable>
-        <Text className="text-[15px] font-bold text-black">인식 결과 확인</Text>
+        <Text className="text-[15px] font-bold text-black">
+          {isEditMode ? '영수증 수정' : '인식 결과 확인'}
+        </Text>
         <View className="w-5.5" />
       </View>
 
@@ -229,58 +279,65 @@ function ConfirmScreen() {
         contentContainerClassName="gap-3.5 px-5 pb-5"
         keyboardShouldPersistTaps="handled"
       >
-        {/* 촬영한 영수증 카드 */}
-        <View className="flex-row items-center justify-between rounded-2xl border border-[#e8e6e1] bg-white px-3.5 py-3">
-          <View className="flex-row items-center gap-3">
-            <View className="h-14 w-11 items-center justify-center rounded-lg border border-[#e8e6e1] bg-white">
+        {/* 촬영한 영수증 카드/안내 문구 — 수정 모드는 새로 찍은 사진이 없으니 안 보여줌 */}
+        {!isEditMode && (
+          <>
+            <View className="flex-row items-center justify-between rounded-2xl border border-[#e8e6e1] bg-white px-3.5 py-3">
+              <View className="flex-row items-center gap-3">
+                <View className="h-14 w-11 items-center justify-center rounded-lg border border-[#e8e6e1] bg-white">
+                  <Icon
+                    name="document-outline"
+                    size={20}
+                    colorClassName="accent-gray"
+                  />
+                </View>
+                <Text className="text-xs text-gray">촬영한 영수증</Text>
+              </View>
+              <Pressable onPress={goBack}>
+                <Text className="text-xs font-bold text-primary">
+                  다시 촬영
+                </Text>
+              </Pressable>
+            </View>
+
+            <View className="flex-row items-center gap-2">
               <Icon
-                name="document-outline"
-                size={20}
+                name="information-circle-outline"
+                size={15}
                 colorClassName="accent-gray"
               />
-            </View>
-            <Text className="text-xs text-gray">촬영한 영수증</Text>
-          </View>
-          <Pressable onPress={goBack}>
-            <Text className="text-xs font-bold text-primary">다시 촬영</Text>
-          </Pressable>
-        </View>
-
-        {/* 안내 문구 */}
-        <View className="flex-row items-center gap-2">
-          <Icon
-            name="information-circle-outline"
-            size={15}
-            colorClassName="accent-gray"
-          />
-          <Text className="text-xs text-gray">
-            자동 인식 결과예요. 확인 후 저장해주세요
-          </Text>
-        </View>
-
-        {/* 인식된 원문 */}
-        <View className="overflow-hidden rounded-2xl border border-[#e8e6e1] bg-white">
-          <Pressable
-            onPress={() => setShowRaw(prev => !prev)}
-            className="flex-row items-center justify-between px-3.5 py-3"
-          >
-            <Text className="text-[13px] font-bold text-black">
-              인식된 원문
-            </Text>
-            <Icon
-              name={showRaw ? 'chevron-up' : 'chevron-down'}
-              size={16}
-              colorClassName="accent-gray"
-            />
-          </Pressable>
-          {showRaw && (
-            <View className="mx-3.5 mb-3.5 rounded-[10px] bg-[#f1f0ec] px-3 py-2.5">
-              <Text className="text-[11px] leading-[1.7] text-gray">
-                {rawText}
+              <Text className="text-xs text-gray">
+                자동 인식 결과예요. 확인 후 저장해주세요
               </Text>
             </View>
-          )}
-        </View>
+          </>
+        )}
+
+        {/* 인식된 원문 — 원문 자체가 없으면(수정 모드에서 흔함) 섹션 자체를 안 보여줌 */}
+        {rawText && (
+          <View className="overflow-hidden rounded-2xl border border-[#e8e6e1] bg-white">
+            <Pressable
+              onPress={() => setShowRaw(prev => !prev)}
+              className="flex-row items-center justify-between px-3.5 py-3"
+            >
+              <Text className="text-[13px] font-bold text-black">
+                인식된 원문
+              </Text>
+              <Icon
+                name={showRaw ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                colorClassName="accent-gray"
+              />
+            </Pressable>
+            {showRaw && (
+              <View className="mx-3.5 mb-3.5 rounded-[10px] bg-[#f1f0ec] px-3 py-2.5">
+                <Text className="text-[11px] leading-[1.7] text-gray">
+                  {rawText}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {/* 가맹점명 */}
         <View className="gap-1.5">
@@ -463,7 +520,7 @@ function ConfirmScreen() {
             render={({ field: { onChange, value } }) => (
               <View className="flex-row flex-wrap gap-2">
                 {CATEGORY_IDS.map(id => {
-                  const info = getCategoryInfo(id);
+                  const categoryInfo = getCategoryInfo(id);
                   const selected = value === id;
                   return (
                     <Pressable
@@ -474,16 +531,20 @@ function ConfirmScreen() {
                       onPress={() => onChange(id)}
                       className="rounded-full px-3.5 py-2"
                       style={{
-                        backgroundColor: selected ? info.bg : '#ffffff',
+                        backgroundColor: selected ? categoryInfo.bg : '#ffffff',
                         borderWidth: 1,
-                        borderColor: selected ? info.color : '#e8e6e1',
+                        borderColor: selected
+                          ? categoryInfo.color
+                          : '#e8e6e1',
                       }}
                     >
                       <Text
                         className="text-[13px] font-bold"
-                        style={{ color: selected ? info.color : '#6f6d68' }}
+                        style={{
+                          color: selected ? categoryInfo.color : '#6f6d68',
+                        }}
                       >
-                        {info.label}
+                        {categoryInfo.label}
                       </Text>
                     </Pressable>
                   );
@@ -520,7 +581,9 @@ function ConfirmScreen() {
               <ActivityIndicator testID="save-loading" color="#ffffff" />
             </View>
           ) : (
-            <Text className="text-base font-bold text-white">저장하기</Text>
+            <Text className="text-base font-bold text-white">
+              {isEditMode ? '수정하기' : '저장하기'}
+            </Text>
           )}
         </TouchableOpacity>
       </View>

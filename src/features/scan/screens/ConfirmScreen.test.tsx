@@ -9,6 +9,7 @@ import {
 import dayjs from 'dayjs';
 
 import { receiptQueryFactory, receiptRepository } from '@/features/receipt/api';
+import type { Receipt } from '@/features/receipt/api/types/receipt';
 import NativeReceiptScanner from '@specs/NativeReceiptScanner';
 
 import ConfirmScreen from './ConfirmScreen';
@@ -23,11 +24,12 @@ jest.mock('@react-navigation/native', () => ({
   useRoute: jest.fn(),
 }));
 
-// 실제 axios 호출이 나가면 안 되니 저장 API 자체를 목 처리.
+// 실제 axios 호출이 나가면 안 되니 저장/수정 API 자체를 목 처리.
 jest.mock('@/features/receipt/api', () => ({
   ...jest.requireActual('@/features/receipt/api'),
   receiptRepository: {
     postReceipt: jest.fn(),
+    patchReceipt: jest.fn(),
   },
 }));
 
@@ -35,6 +37,7 @@ const mockedUseNavigation = useNavigation as jest.Mock;
 const mockedUseRoute = useRoute as jest.Mock;
 const mockedScanText = NativeReceiptScanner.scanText as jest.Mock;
 const mockedPostReceipt = receiptRepository.postReceipt as jest.Mock;
+const mockedPatchReceipt = receiptRepository.patchReceipt as jest.Mock;
 
 const RAW_TEXT_SUCCESS = [
   '점포명 : 스타벅스 강남점',
@@ -44,6 +47,16 @@ const RAW_TEXT_SUCCESS = [
   '카페라떼 Grande   5,900',
   '총 액          12,400',
 ].join('\n');
+
+// ReceiptDetailScreen의 "수정"에서 넘어올 때 route.params.info로 오는 값.
+const EDIT_RECEIPT: Receipt = {
+  id: 1,
+  merchant: '스타벅스 강남점',
+  amount: 12400,
+  category: 'food',
+  date: '2026-08-20',
+  rawText: RAW_TEXT_SUCCESS,
+};
 
 // ConfirmScreen이 useMutation/useQueryClient를 쓰므로 QueryClientProvider로 감싸야 함
 // (HomeScreen.test.tsx와 동일한 패턴).
@@ -416,5 +429,136 @@ test('저장에 실패하면 에러 문구를 보여주고 다시 시도할 수 
     expect(mockNavigate).not.toHaveBeenCalled();
     // 실패 후엔 다시 시도할 수 있게 버튼이 풀려있어야 함.
     expect(screen.getByTestId('save-button').props.accessibilityState.disabled).toBe(false);
+  });
+});
+
+describe('수정 모드 (route.params.info가 있을 때)', () => {
+  beforeEach(() => {
+    mockedUseRoute.mockReturnValue({ params: { info: EDIT_RECEIPT } });
+  });
+
+  test('스캔을 하지 않고 바로 폼에 기존 값이 채워져 있다', async () => {
+    await renderConfirmScreen();
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
+    });
+    expect(screen.getByDisplayValue('12400')).toBeTruthy();
+    expect(screen.getByText('2026년 8월 20일')).toBeTruthy();
+    expect(
+      screen.getByTestId('category-food').props.accessibilityState,
+    ).toMatchObject({ selected: true });
+    expect(mockedScanText).not.toHaveBeenCalled();
+  });
+
+  test('헤더가 "영수증 수정"이고, 촬영 관련 UI는 보이지 않는다', async () => {
+    await renderConfirmScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('영수증 수정')).toBeTruthy();
+    });
+    expect(screen.queryByText('촬영한 영수증')).toBeNull();
+    expect(screen.queryByText('다시 촬영')).toBeNull();
+  });
+
+  test('저장 버튼 문구가 "수정하기"이다', async () => {
+    await renderConfirmScreen();
+
+    await waitFor(() => {
+      expect(screen.getByText('수정하기')).toBeTruthy();
+    });
+    expect(screen.queryByText('저장하기')).toBeNull();
+  });
+
+  test('수정하기를 누르면 patchReceipt를 호출하고, 성공하면 해당 영수증의 상세/리스트 쿼리를 무효화한 뒤 한 번만 뒤로간다', async () => {
+    mockedPatchReceipt.mockResolvedValue({});
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
+
+    await render(
+      <QueryClientProvider client={queryClient}>
+        <ConfirmScreen />
+      </QueryClientProvider>,
+    );
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
+    });
+
+    await fireEvent.press(screen.getByText('수정하기'));
+
+    await waitFor(() => {
+      expect(mockedPatchReceipt).toHaveBeenCalledWith(
+        '1',
+        {
+          merchant: '스타벅스 강남점',
+          amount: 12400,
+          category: 'food',
+          date: '2026-08-20',
+          rawText: RAW_TEXT_SUCCESS,
+        },
+      );
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+        queryKey: receiptQueryFactory.detail('1').queryKey,
+      });
+      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
+        queryKey: receiptQueryFactory.list().queryKey,
+      });
+      // Confirm이 Detail 위에 push된 것뿐이라(같은 Stacks 안) 한 번만 뒤로가면
+      // 정확히 그 Detail로 돌아간다 — 생성 때와 달리 Home으로 더 이동할 필요 없음.
+      expect(mockGoBack).toHaveBeenCalledTimes(1);
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+  });
+
+  test('수정이 진행되는 동안 버튼이 비활성화되고 로딩 인디케이터를 보여준다', async () => {
+    let resolvePatch: (value: unknown) => void = () => {};
+    mockedPatchReceipt.mockReturnValue(
+      new Promise(resolve => {
+        resolvePatch = resolve;
+      }),
+    );
+
+    await renderConfirmScreen();
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
+    });
+
+    fireEvent.press(screen.getByText('수정하기'));
+
+    await waitFor(() => {
+      expect(screen.queryByText('수정하기')).toBeNull();
+      expect(screen.getByTestId('save-loading')).toBeTruthy();
+      expect(
+        screen.getByTestId('save-button').props.accessibilityState.disabled,
+      ).toBe(true);
+    });
+
+    resolvePatch({});
+    await waitFor(() => {
+      expect(mockGoBack).toHaveBeenCalled();
+    });
+  });
+
+  test('수정에 실패하면 에러 문구를 보여주고 다시 시도할 수 있다', async () => {
+    mockedPatchReceipt.mockRejectedValue(new Error('EDIT_ERROR'));
+
+    await renderConfirmScreen();
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
+    });
+
+    await fireEvent.press(screen.getByText('수정하기'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText('수정에 실패했어요. 다시 시도해주세요.'),
+      ).toBeTruthy();
+      expect(mockGoBack).not.toHaveBeenCalled();
+      expect(
+        screen.getByTestId('save-button').props.accessibilityState.disabled,
+      ).toBe(false);
+    });
   });
 });

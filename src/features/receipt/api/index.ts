@@ -9,8 +9,6 @@ import {
 } from './types/receipt';
 import type { ReceiptSummary } from './types/summary';
 
-export const PAGE_SIZE = 4;
-
 export const receiptRepository = (() => {
   const BASE_URL = '/receipts';
 
@@ -37,6 +35,14 @@ export const receiptRepository = (() => {
 
     getReceiptById: async (id: string) =>
       client.get<Receipt>(`${BASE_URL}/${id}`),
+
+    deleteReceipt: async (id: string) =>
+      client.delete<void>(`${BASE_URL}/${id}`),
+
+    // 스펙상 전부 optional한 부분 업데이트지만, ConfirmScreen의 폼은 항상 전체 값을
+    // 채워서 보내므로 CreateReceiptPayload(전부 필수)를 그대로 재사용한다.
+    patchReceipt: async (id: string, payload: CreateReceiptPayload) =>
+      client.patch<Receipt>(`${BASE_URL}/${id}`, payload),
   };
 })();
 

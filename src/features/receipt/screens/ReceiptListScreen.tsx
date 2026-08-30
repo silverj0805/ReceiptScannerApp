@@ -8,21 +8,25 @@ import {
   ActivityIndicator,
   FlatList,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCSSVariable } from 'uniwind';
 
 import type { RootStackParamList } from '@/app/navigation/types';
 import Icon from '@/shared/components/ui/Icon';
 import { CATEGORY_IDS, getCategoryInfo } from '@/shared/utils/category';
 
-import { PAGE_SIZE, receiptQueryFactory, receiptRepository } from '../api';
+import { receiptQueryFactory, receiptRepository } from '../api';
 import type { CategoryId } from '../api/types/category';
 import { groupReceiptsByDate, ReceiptGroup } from '../utils/groupByDate';
 import type { PeriodFilter } from '../utils/receiptFilters';
 import { categoriesToParam, periodToMonthParam } from '../utils/receiptFilters';
+
+const PAGE_SIZE = 10;
 
 const PERIOD_TABS: { id: PeriodFilter; label: string }[] = [
   { id: 'month', label: '이번 달' },
@@ -38,6 +42,9 @@ const CATEGORY_CHIPS: Array<{ id: 'all' | CategoryId }> = [
 ];
 
 function ReceiptListScreen() {
+  const backgroundColor = useCSSVariable('--color-background');
+  const primaryColor = useCSSVariable('--color-primary');
+
   const scrollRef = useRef<FlatList<ReceiptGroup> | null>(null);
   useScrollToTop(scrollRef);
 
@@ -102,6 +109,14 @@ function ReceiptListScreen() {
       params: { receiptId: String(id) },
     });
 
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await listQuery.refetch().finally(() => {
+      setRefreshing(false);
+    });
+  };
+
   if (listQuery.isLoading) {
     return (
       <View
@@ -114,8 +129,12 @@ function ReceiptListScreen() {
   }
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1 }} className="bg-background">
-      <View className="gap-3 px-5 pb-2 pt-4">
+    <SafeAreaView
+      edges={['top']}
+      style={{ flex: 1, backgroundColor }}
+      className="bg-background"
+    >
+      <View className="gap-3 px-5 pb-2 pt-4 mb-5">
         <Text className="text-xl font-extrabold text-black">전체 내역</Text>
 
         {/* 기간 — 배타적 단일 선택 */}
@@ -189,6 +208,7 @@ function ReceiptListScreen() {
 
       <FlatList
         testID="receipt-list"
+        showsVerticalScrollIndicator={false}
         ref={scrollRef}
         data={groups}
         keyExtractor={group => group.date}
@@ -255,6 +275,14 @@ function ReceiptListScreen() {
             </View>
           </View>
         )}
+        refreshControl={
+          <RefreshControl
+            testID="receipt-list-loading"
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={primaryColor}
+          />
+        }
       />
     </SafeAreaView>
   );
