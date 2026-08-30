@@ -1,33 +1,55 @@
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useState } from 'react';
-import { Dimensions, Pressable, StatusBar, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+  Dimensions,
+  Linking,
+  Pressable,
+  StatusBar,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCameraPermission } from 'react-native-vision-camera';
 
 import type { RootStackParamList } from '@/app/navigation/types';
 import Icon from '@/shared/components/ui/Icon';
 
 const { width, height } = Dimensions.get('screen');
 
-// TODO(패키지 연동): 지금은 UI만 먼저 완성하는 단계라 권한 상태를 로컬 state로만 흉내냄.
-// 다음 단계에서 react-native-vision-camera의 useCameraPermission()으로 교체.
-const TEMP_HAS_PERMISSION = true;
-
 function ScanScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [flashOn, setFlashOn] = useState(false);
 
+  const { hasPermission, canRequestPermission, requestPermission } =
+    useCameraPermission();
+  // not-determined(마운트 시 자동 요청) / denied·restricted(더 이상 요청 불가, 설정으로 유도) 구분.
+  const isPermissionPending = !hasPermission && canRequestPermission;
+  const isPermissionDenied = !hasPermission && !canRequestPermission;
+
+  useEffect(() => {
+    if (isPermissionPending) {
+      requestPermission();
+    }
+  }, [isPermissionPending, requestPermission]);
+
   const close = () => navigation.goBack();
   const toggleFlash = () => setFlashOn(prev => !prev);
-  // TODO(패키지 연동): Linking.openSettings()로 교체.
-  const goToSettings = () => {};
+  const goToSettings = () => {
+    Linking.openSettings();
+  };
   // TODO(패키지 연동): react-native-vision-camera의 photoOutput.capturePhoto()로 교체.
   const capture = () => {};
   // TODO(패키지 연동): react-native-image-picker의 launchImageLibrary()로 교체.
   const openGallery = () => {};
 
-  if (!TEMP_HAS_PERMISSION) {
+  if (isPermissionPending) {
+    // 시스템 권한 다이얼로그가 뜨는 동안 보여줄 빈 화면.
+    return <View className="flex-1 bg-[#141513]" />;
+  }
+
+  if (isPermissionDenied) {
     return (
       <View className="flex-1 items-center justify-center gap-4.5 bg-[#141513] px-8">
         <Icon name="camera-outline" size={72} colorClassName="accent-primary" />

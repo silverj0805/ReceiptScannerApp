@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { Linking } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import {
   useCameraDevice,
@@ -70,6 +71,8 @@ beforeEach(() => {
     dispose: mockDispose,
   });
   mockSaveToTemporaryFileAsync.mockResolvedValue('file:///tmp/photo.jpg');
+  // Linking.openSettings()는 네이티브 모듈 호출이라 Jest에서 그대로 두면 던짐 — 스파이로 대체.
+  jest.spyOn(Linking, 'openSettings').mockResolvedValue();
 });
 
 test('카메라 권한이 아직 결정되지 않았으면 마운트 시 권한을 요청한다', async () => {
@@ -80,6 +83,8 @@ test('카메라 권한이 아직 결정되지 않았으면 마운트 시 권한�
   await waitFor(() => {
     expect(mockRequestPermission).toHaveBeenCalled();
   });
+  // 시스템 다이얼로그 응답 전이라 아직 거부 안내 카드는 뜨지 않아야 함.
+  expect(screen.queryByText('카메라 접근 권한이 필요해요')).toBeNull();
 });
 
 test('카메라 권한이 거부됐으면 설정으로 이동 안내를 보여준다', async () => {
@@ -87,12 +92,33 @@ test('카메라 권한이 거부됐으면 설정으로 이동 안내를 보여�
 
   await render(<ScanScreen />);
 
+  expect(screen.getByText('카메라 접근 권한이 필요해요')).toBeTruthy();
   expect(
-    screen.getByText('카메라 권한이 필요해요. 설정에서 권한을 허용해주세요.'),
+    screen.getByText('영수증을 스캔하려면\n카메라 권한을 허용해주세요'),
   ).toBeTruthy();
   expect(screen.getByText('설정으로 이동')).toBeTruthy();
   // canRequestPermission이 false(=denied)면 더 이상 요청해도 소용없으므로 자동 요청은 안 함.
   expect(mockRequestPermission).not.toHaveBeenCalled();
+});
+
+test('설정으로 이동 버튼을 누르면 시스템 설정 앱을 연다', async () => {
+  setPermission({ hasPermission: false, canRequestPermission: false });
+
+  await render(<ScanScreen />);
+
+  fireEvent.press(screen.getByText('설정으로 이동'));
+
+  expect(Linking.openSettings).toHaveBeenCalled();
+});
+
+test('권한 거부 화면에서 나중에 하기를 누르면 이전 화면으로 돌아간다', async () => {
+  setPermission({ hasPermission: false, canRequestPermission: false });
+
+  await render(<ScanScreen />);
+
+  fireEvent.press(screen.getByText('나중에 하기'));
+
+  expect(mockGoBack).toHaveBeenCalled();
 });
 
 test('카메라 권한이 있으면 카메라 프리뷰를 보여준다', async () => {
