@@ -51,15 +51,21 @@ function ScanScreen() {
   };
 
   const capture = async () => {
-    const photo = await photoOutput.capturePhoto(
-      { flashMode: flashOn ? 'on' : 'off' },
-      {},
-    );
-    const imageUri = await photo.saveToTemporaryFileAsync();
-    photo.dispose();
+    // TODO(임시): 에뮬레이터는 카메라가 안 돼서 ConfirmScreen 확인용으로 실제 촬영을
+    // 우회함. require()로 번들 이미지를 바로 넘기면 (a) 반환값이 string이 아니라 숫자
+    // 에셋 ID라 타입이 안 맞고, (b) dev 모드에선 Metro 서버 http:// URL이 돼서 ML Kit의
+    // InputImage.fromFilePath()가 못 읽는다 — 그래서 여기선 그냥 없는 파일 경로만 넘기고,
+    // ConfirmScreen이 scanText 실패를 "인식 실패" 화면으로 우아하게 처리하는지만 확인.
+    // 실제 촬영 로직 복구되면 아래 블록으로 되돌릴 것.
+    // const photo = await photoOutput.capturePhoto(
+    //   { flashMode: flashOn ? 'on' : 'off' },
+    //   {},
+    // );
+    // const imageUri = await photo.saveToTemporaryFileAsync();
+    // photo.dispose();
     navigation.navigate('Stacks', {
       screen: 'Confirm',
-      params: { imageUri },
+      params: { imageUri: 'temp-test-image-uri' },
     });
   };
 
@@ -194,9 +200,9 @@ function ScanScreen() {
             testID="scan-capture-button"
             onPress={capture}
             hitSlop={8}
-            className="h-[72px] w-[72px] items-center justify-center rounded-full border-4 border-white"
+            className="h-18 w-18 items-center justify-center rounded-full border-4 border-white"
           >
-            <View className="h-[58px] w-[58px] rounded-full bg-white" />
+            <View className="h-14.5 w-14.5 rounded-full bg-white" />
           </Pressable>
           <View className="h-12 w-12" />
         </View>

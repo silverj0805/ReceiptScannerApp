@@ -70,10 +70,10 @@ test('인식된 원문 토글을 누르면 원문을 펼치고 접는다', async
 
   expect(screen.queryByText(RAW_TEXT_SUCCESS)).toBeNull();
 
-  fireEvent.press(screen.getByText('인식된 원문'));
+  await fireEvent.press(screen.getByText('인식된 원문'));
   expect(screen.getByText(RAW_TEXT_SUCCESS)).toBeTruthy();
 
-  fireEvent.press(screen.getByText('인식된 원문'));
+  await fireEvent.press(screen.getByText('인식된 원문'));
   expect(screen.queryByText(RAW_TEXT_SUCCESS)).toBeNull();
 });
 
@@ -89,6 +89,18 @@ test('텍스트 인식에 실패하면(빈 문자열) 안내를 보여준다', a
   expect(screen.getByText('직접 입력')).toBeTruthy();
 });
 
+test('scanText가 실패(reject)해도 죽지 않고 인식 실패 화면을 보여준다', async () => {
+  // 존재하지 않는 imageUri 등으로 네이티브 쪽(ReceiptScannerModule.kt)이 reject하는 경우.
+  // .catch() 없이 방치하면 unhandled rejection으로 앱이 죽은 것처럼 보였던 회귀 재발 방지.
+  mockedScanText.mockRejectedValue(new Error('SCAN_ERROR'));
+
+  await render(<ConfirmScreen />);
+
+  await waitFor(() => {
+    expect(screen.getByText('텍스트를 인식하지 못했어요')).toBeTruthy();
+  });
+});
+
 test('인식 실패 화면에서 다시 촬영을 누르면 이전 화면으로 돌아간다', async () => {
   mockedScanText.mockResolvedValue('');
 
@@ -97,7 +109,7 @@ test('인식 실패 화면에서 다시 촬영을 누르면 이전 화면으로 
     expect(screen.getByText('텍스트를 인식하지 못했어요')).toBeTruthy();
   });
 
-  fireEvent.press(screen.getByText('다시 촬영'));
+  await fireEvent.press(screen.getByText('다시 촬영'));
 
   expect(mockGoBack).toHaveBeenCalled();
 });
@@ -110,7 +122,7 @@ test('인식 실패 화면에서 직접 입력을 누르면 빈 폼으로 전환
     expect(screen.getByText('텍스트를 인식하지 못했어요')).toBeTruthy();
   });
 
-  fireEvent.press(screen.getByText('직접 입력'));
+  await fireEvent.press(screen.getByText('직접 입력'));
 
   expect(screen.getByTestId('merchant-input').props.value).toBe('');
   expect(screen.getByTestId('amount-input').props.value).toBe('');
@@ -124,7 +136,7 @@ test('카테고리를 선택할 수 있다', async () => {
     expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
   });
 
-  fireEvent.press(screen.getByTestId('category-transit'));
+  await fireEvent.press(screen.getByTestId('category-transit'));
 
   expect(screen.getByTestId('category-transit').props.accessibilityState)
     .toMatchObject({ selected: true });
@@ -139,9 +151,9 @@ test('가맹점명/금액이 비어있는 채로 저장하기를 누르면 에�
   await waitFor(() => {
     expect(screen.getByText('텍스트를 인식하지 못했어요')).toBeTruthy();
   });
-  fireEvent.press(screen.getByText('직접 입력'));
+  await fireEvent.press(screen.getByText('직접 입력'));
 
-  fireEvent.press(screen.getByText('저장하기'));
+  await fireEvent.press(screen.getByText('저장하기'));
 
   await waitFor(() => {
     expect(screen.getByText('가맹점명을 입력해주세요')).toBeTruthy();
