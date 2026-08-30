@@ -27,4 +27,5 @@ export type StackParamList = {
   Confirm: { imageUri?: string; info?: Receipt };
   Detail: { receiptId: string };
   Settings: undefined;
+  License: undefined;
 };
