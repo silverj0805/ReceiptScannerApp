@@ -10,6 +10,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Camera,
@@ -62,8 +63,18 @@ function ScanScreen() {
     });
   };
 
-  // TODO(패키지 연동): react-native-image-picker의 launchImageLibrary()로 교체.
-  const openGallery = () => {};
+  const openGallery = async () => {
+    const result = await launchImageLibrary({ mediaType: 'photo' });
+    if (result.didCancel) return;
+
+    const imageUri = result.assets?.[0]?.uri;
+    if (imageUri == null) return;
+
+    navigation.navigate('Stacks', {
+      screen: 'Confirm',
+      params: { imageUri },
+    });
+  };
 
   if (isPermissionPending) {
     // 시스템 권한 다이얼로그가 뜨는 동안 보여줄 빈 화면.
