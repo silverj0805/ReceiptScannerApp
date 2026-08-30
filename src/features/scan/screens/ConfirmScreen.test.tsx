@@ -181,10 +181,12 @@ test('카테고리를 선택할 수 있다', async () => {
 
   await fireEvent.press(screen.getByTestId('category-transit'));
 
-  expect(screen.getByTestId('category-transit').props.accessibilityState)
-    .toMatchObject({ selected: true });
-  expect(screen.getByTestId('category-food').props.accessibilityState)
-    .toMatchObject({ selected: false });
+  expect(
+    screen.getByTestId('category-transit').props.accessibilityState,
+  ).toMatchObject({ selected: true });
+  expect(
+    screen.getByTestId('category-food').props.accessibilityState,
+  ).toMatchObject({ selected: false });
 });
 
 test('필드를 채웠다 비우면 해당 필드의 에러 메시지를 보여준다', async () => {
@@ -260,7 +262,9 @@ test('직접 입력 모드에서는 처음엔 저장하기 버튼이 비활성�
   });
   await fireEvent.press(screen.getByText('직접 입력'));
 
-  expect(screen.getByTestId('save-button').props.accessibilityState.disabled).toBe(true);
+  expect(
+    screen.getByTestId('save-button').props.accessibilityState.disabled,
+  ).toBe(true);
 });
 
 test('인식에 성공해도 카테고리를 직접 고르기 전까지는 저장하기 버튼이 비활성화돼 있다', async () => {
@@ -272,7 +276,9 @@ test('인식에 성공해도 카테고리를 직접 고르기 전까지는 저�
   });
 
   // 가맹점명/금액/날짜는 자동 인식으로 채워졌지만 카테고리는 아직 안 골랐음.
-  expect(screen.getByTestId('save-button').props.accessibilityState.disabled).toBe(true);
+  expect(
+    screen.getByTestId('save-button').props.accessibilityState.disabled,
+  ).toBe(true);
 });
 
 test('가맹점명/금액/날짜/카테고리를 모두 채우면 저장하기 버튼이 활성화된다', async () => {
@@ -282,12 +288,16 @@ test('가맹점명/금액/날짜/카테고리를 모두 채우면 저장하기 �
   await waitFor(() => {
     expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
   });
-  expect(screen.getByTestId('save-button').props.accessibilityState.disabled).toBe(true);
+  expect(
+    screen.getByTestId('save-button').props.accessibilityState.disabled,
+  ).toBe(true);
 
   await fireEvent.press(screen.getByTestId('category-food'));
 
   await waitFor(() => {
-    expect(screen.getByTestId('save-button').props.accessibilityState.disabled).toBe(false);
+    expect(
+      screen.getByTestId('save-button').props.accessibilityState.disabled,
+    ).toBe(false);
   });
 });
 
@@ -301,7 +311,9 @@ test('저장하기를 누르면 postReceipt를 호출하고 성공하면 이전 
   });
   await fireEvent.press(screen.getByTestId('category-food'));
   await waitFor(() => {
-    expect(screen.getByTestId('save-button').props.accessibilityState.disabled).toBe(false);
+    expect(
+      screen.getByTestId('save-button').props.accessibilityState.disabled,
+    ).toBe(false);
   });
 
   await fireEvent.press(screen.getByText('저장하기'));
@@ -376,7 +388,9 @@ test('저장이 진행되는 동안 버튼이 비활성화되고 저장하기 �
   await waitFor(() => {
     expect(screen.queryByText('저장하기')).toBeNull();
     expect(screen.getByTestId('save-loading')).toBeTruthy();
-    expect(screen.getByTestId('save-button').props.accessibilityState.disabled).toBe(true);
+    expect(
+      screen.getByTestId('save-button').props.accessibilityState.disabled,
+    ).toBe(true);
   });
 
   resolvePostReceipt({});
@@ -428,7 +442,9 @@ test('저장에 실패하면 에러 문구를 보여주고 다시 시도할 수 
     expect(mockGoBack).not.toHaveBeenCalled();
     expect(mockNavigate).not.toHaveBeenCalled();
     // 실패 후엔 다시 시도할 수 있게 버튼이 풀려있어야 함.
-    expect(screen.getByTestId('save-button').props.accessibilityState.disabled).toBe(false);
+    expect(
+      screen.getByTestId('save-button').props.accessibilityState.disabled,
+    ).toBe(false);
   });
 });
 
@@ -473,7 +489,10 @@ describe('수정 모드 (route.params.info가 있을 때)', () => {
   test('수정하기를 누르면 patchReceipt를 호출하고, 성공하면 해당 영수증의 상세/리스트 쿼리를 무효화한 뒤 한 번만 뒤로간다', async () => {
     mockedPatchReceipt.mockResolvedValue({});
     const queryClient = new QueryClient({
-      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+      defaultOptions: {
+        queries: { retry: false },
+        mutations: { retry: false },
+      },
     });
     const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
 
@@ -489,16 +508,13 @@ describe('수정 모드 (route.params.info가 있을 때)', () => {
     await fireEvent.press(screen.getByText('수정하기'));
 
     await waitFor(() => {
-      expect(mockedPatchReceipt).toHaveBeenCalledWith(
-        '1',
-        {
-          merchant: '스타벅스 강남점',
-          amount: 12400,
-          category: 'food',
-          date: '2026-08-20',
-          rawText: RAW_TEXT_SUCCESS,
-        },
-      );
+      expect(mockedPatchReceipt).toHaveBeenCalledWith('1', {
+        merchant: '스타벅스 강남점',
+        amount: 12400,
+        category: 'food',
+        date: '2026-08-20',
+        rawText: RAW_TEXT_SUCCESS,
+      });
       expect(invalidateQueriesSpy).toHaveBeenCalledWith({
         queryKey: receiptQueryFactory.detail('1').queryKey,
       });
@@ -559,6 +575,77 @@ describe('수정 모드 (route.params.info가 있을 때)', () => {
       expect(
         screen.getByTestId('save-button').props.accessibilityState.disabled,
       ).toBe(false);
+    });
+  });
+});
+
+describe('직접 기록 모드 (route.params에 imageUri/info가 둘 다 없을 때 — 하단 탭 "기록")', () => {
+  beforeEach(() => {
+    mockedUseRoute.mockReturnValue({ params: {} });
+  });
+
+  test('스캔하지 않고 바로 빈 폼을 보여준다', async () => {
+    await renderConfirmScreen();
+
+    // 스캔 로딩 화면(confirm-loading)을 절대 거치지 않고 바로 폼이 보인다.
+    expect(screen.queryByTestId('confirm-loading')).toBeNull();
+    expect(screen.getByTestId('merchant-input').props.value).toBe('');
+    expect(screen.getByTestId('amount-input').props.value).toBe('');
+    expect(screen.getByText('날짜를 선택해주세요')).toBeTruthy();
+    expect(mockedScanText).not.toHaveBeenCalled();
+  });
+
+  test('헤더가 "영수증 기록"이고, 인식/촬영 관련 UI는 전혀 보이지 않는다', async () => {
+    await renderConfirmScreen();
+
+    expect(screen.getByText('영수증 기록')).toBeTruthy();
+    expect(screen.queryByText('촬영한 영수증')).toBeNull();
+    expect(screen.queryByText('다시 촬영')).toBeNull();
+    expect(
+      screen.queryByText('자동 인식 결과예요. 확인 후 저장해주세요'),
+    ).toBeNull();
+    expect(screen.queryByText('인식된 원문')).toBeNull();
+    expect(screen.queryByText('텍스트를 인식하지 못했어요')).toBeNull();
+  });
+
+  test('저장 버튼 문구는 "저장하기"이고, 값을 채우고 누르면 postReceipt(생성)를 호출한다', async () => {
+    mockedPostReceipt.mockResolvedValue({});
+    await renderConfirmScreen();
+
+    expect(screen.getByText('저장하기')).toBeTruthy();
+
+    await fireEvent.changeText(
+      screen.getByTestId('merchant-input'),
+      '스타벅스 강남점',
+    );
+    await fireEvent.changeText(screen.getByTestId('amount-input'), '12400');
+    await fireEvent.press(screen.getByTestId('date-input'));
+    await fireEvent.changeText(
+      screen.getByTestId('date-picker-native'),
+      '2026-08-20T12:00:00',
+    );
+    await fireEvent.press(screen.getByText('확인'));
+    await fireEvent.press(screen.getByTestId('category-food'));
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('save-button').props.accessibilityState.disabled,
+      ).toBe(false);
+    });
+    await fireEvent.press(screen.getByText('저장하기'));
+
+    await waitFor(() => {
+      expect(mockedPostReceipt).toHaveBeenCalledWith(
+        {
+          merchant: '스타벅스 강남점',
+          amount: 12400,
+          category: 'food',
+          date: '2026-08-20',
+          rawText: undefined,
+        },
+        expect.anything(),
+      );
+      expect(mockedPatchReceipt).not.toHaveBeenCalled();
     });
   });
 });

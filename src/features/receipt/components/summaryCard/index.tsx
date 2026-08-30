@@ -15,7 +15,7 @@ function SummaryCard({ total, deltaPercent, byCategory }: SummaryCardProps) {
     <Box className="w-full gap-3.5">
       <View className="gap-1.5">
         <Text className="font-bold text-gray">이번 달 지출 💸</Text>
-        <View className="flex-row items-baseline gap-2">
+        <View className="flex-row items-baseline gap-2 flex-wrap">
           <Text className="text-[32px] font-extrabold tracking-[-0.5px] text-black tabular-nums">
             ₩{total.toLocaleString('ko-KR')}
           </Text>

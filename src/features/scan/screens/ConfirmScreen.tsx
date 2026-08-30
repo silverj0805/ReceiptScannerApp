@@ -85,11 +85,15 @@ function ConfirmScreen() {
   // 이미 저장돼 있는 값을 폼에 바로 채워서 보여준다.
   const isEditMode = info != null;
   const editingReceiptId = info ? String(info.id) : undefined;
+  // 둘 다 없으면 하단 탭 "기록"에서 바로 넘어온 것 — 스캔할 이미지가 아예 없으므로
+  // 인식/촬영 관련 UI를 전부 건너뛰고 빈 폼으로 바로 직접 입력하게 한다.
+  const isDirectEntry = !isEditMode && !imageUri;
 
-  // null = 인식 중, ''(빈 문자열) = 인식 실패, 그 외 = 인식된 원문.
-  // 수정 모드는 스캔을 안 하므로 로딩/실패 화면을 절대 거치지 않고 바로 폼을 보여준다.
+  // null = 인식 중, ''(빈 문자열) = 인식 실패/직접 입력, 그 외 = 인식된 원문.
+  // 수정·직접입력 모드는 스캔을 안 하므로 로딩/실패 화면을 절대 거치지 않고 바로
+  // 폼을 보여준다.
   const [rawText, setRawText] = useState<string | null>(
-    isEditMode ? (info.rawText ?? '') : null,
+    isEditMode ? info.rawText ?? '' : isDirectEntry ? '' : null,
   );
   const [manualEntry, setManualEntry] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
@@ -221,9 +225,11 @@ function ConfirmScreen() {
     );
   }
 
-  // 수정 모드는 스캔을 안 하므로(rawText가 애초에 null이 아님) 여기 도달할 일이 없지만,
-  // rawText가 우연히 빈 값이어도 "인식 실패" 화면(스캔 전용 문구)이 뜨면 안 되므로 명시적으로 막는다.
-  const isRecognitionFailed = !isEditMode && rawText === '' && !manualEntry;
+  // 수정·직접입력 모드는 스캔을 안 하므로(rawText가 애초에 null이 아님) 여기 도달할
+  // 일이 없지만, rawText가 우연히 빈 값이어도 "인식 실패" 화면(스캔 전용 문구)이
+  // 뜨면 안 되므로 명시적으로 막는다.
+  const isRecognitionFailed =
+    !isEditMode && !isDirectEntry && rawText === '' && !manualEntry;
 
   if (isRecognitionFailed) {
     return (
@@ -269,7 +275,11 @@ function ConfirmScreen() {
           <Icon name="chevron-back" size={22} colorClassName="accent-black" />
         </Pressable>
         <Text className="text-[15px] font-bold text-black">
-          {isEditMode ? '영수증 수정' : '인식 결과 확인'}
+          {isEditMode
+            ? '영수증 수정'
+            : isDirectEntry
+            ? '영수증 기록'
+            : '인식 결과 확인'}
         </Text>
         <View className="w-5.5" />
       </View>
@@ -279,8 +289,8 @@ function ConfirmScreen() {
         contentContainerClassName="gap-3.5 px-5 pb-5"
         keyboardShouldPersistTaps="handled"
       >
-        {/* 촬영한 영수증 카드/안내 문구 — 수정 모드는 새로 찍은 사진이 없으니 안 보여줌 */}
-        {!isEditMode && (
+        {/* 촬영한 영수증 카드/안내 문구 — 수정·직접입력 모드는 사진이 없으니 안 보여줌 */}
+        {!isEditMode && !isDirectEntry && (
           <>
             <View className="flex-row items-center justify-between rounded-2xl border border-[#e8e6e1] bg-white px-3.5 py-3">
               <View className="flex-row items-center gap-3">
@@ -533,9 +543,7 @@ function ConfirmScreen() {
                       style={{
                         backgroundColor: selected ? categoryInfo.bg : '#ffffff',
                         borderWidth: 1,
-                        borderColor: selected
-                          ? categoryInfo.color
-                          : '#e8e6e1',
+                        borderColor: selected ? categoryInfo.color : '#e8e6e1',
                       }}
                     >
                       <Text

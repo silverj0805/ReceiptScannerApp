@@ -4,6 +4,7 @@ import { useResolveClassNames } from 'uniwind';
 
 import HomeScreen from '@/features/receipt/screens/home';
 import ReceiptListScreen from '@/features/receipt/screens/ReceiptListScreen';
+import WriteRedirectScreen from '@/features/receipt/screens/WriteRedirectScreen';
 import ScanScreen from '@/features/scan/screens/ScanScreen';
 
 import ScanTabButton from './tabBars/ScanTabButton';
@@ -12,7 +13,10 @@ import {
   renderHomeLabel,
   renderReceiptListIcon,
   renderReceiptListLabel,
+  renderWriteIcon,
+  renderWriteLabel,
 } from './tabBars/TabBarIcon';
+import WriteTabButton from './tabBars/WriteTabButton';
 import type { BottomTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -32,7 +36,6 @@ function BottomTabNavigator() {
           height: 64 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 5,
-          paddingHorizontal: 20,
         },
       }}
     >
@@ -43,6 +46,16 @@ function BottomTabNavigator() {
           title: '홈',
           tabBarIcon: renderHomeIcon,
           tabBarLabel: renderHomeLabel,
+        }}
+      />
+      <Tab.Screen
+        name="Write"
+        component={WriteRedirectScreen}
+        options={{
+          title: '기록',
+          tabBarIcon: renderWriteIcon,
+          tabBarLabel: renderWriteLabel,
+          tabBarButton: WriteTabButton,
         }}
       />
       <Tab.Screen
