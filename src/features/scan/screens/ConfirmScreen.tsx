@@ -101,6 +101,9 @@ function ConfirmScreen() {
   const [manualEntry, setManualEntry] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // 저장/수정 요청이 진행되는 동안 버튼을 막아 중복 제출을 방지한다.
+  const [isLoading, setIsLoading] = useState(false);
+
   // iOS 전용 — 날짜 피커를 담는 바텀시트 Modal의 표시 여부.
   // (Android는 DateTimePickerAndroid.open()이 OS 다이얼로그를 직접 띄우므로 불필요.)
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -116,11 +119,14 @@ function ConfirmScreen() {
   const { mutateAsync: createReceipt } = useMutation({
     mutationFn: receiptRepository.postReceipt,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: receiptQueryFactory._def });
+      // 목록/요약 갱신은 더 이상 invalidateQueries에 기대지 않음 — Home이
+      // useFocusEffect로 포커스될 때마다 직접 refetch한다(더 안정적으로 확인됨).
+      setIsLoading(false);
       navigation.goBack();
       navigation.navigate('BottomTabs', { screen: 'Home' });
     },
     onError: () => {
+      setIsLoading(false);
       setSubmitError('저장에 실패했어요. 다시 시도해주세요.');
     },
   });
@@ -129,20 +135,20 @@ function ConfirmScreen() {
     mutationFn: (payload: CreateReceiptPayload) =>
       receiptRepository.patchReceipt(editingReceiptId ?? '', payload),
     onSuccess: () => {
+      // 수정 직후 돌아가는 화면(ReceiptDetailScreen) 자체는 useFocusEffect가 아니라
+      // 이 명시적 invalidateQueries로 갱신한다 — 이쪽은 안정적으로 동작 확인됨.
+      // 목록/요약(Home, ReceiptListScreen)은 각 화면의 useFocusEffect가 담당.
       if (editingReceiptId) {
         queryClient.invalidateQueries({
           queryKey: receiptQueryFactory.detail(editingReceiptId).queryKey,
+          refetchType: 'all',
         });
       }
-      queryClient.invalidateQueries({
-        queryKey: receiptQueryFactory.list().queryKey,
-      });
-      // Detail에서 push된 화면이라 (Confirm -> Detail 순서로 스택에 쌓여있음)
-      // 한 번만 돌아가면 그 Detail로 정확히 돌아간다 — create처럼 Home으로
-      // 한 번 더 이동할 필요가 없음.
+      setIsLoading(false);
       navigation.goBack();
     },
     onError: () => {
+      setIsLoading(false);
       setSubmitError('수정에 실패했어요. 다시 시도해주세요.');
     },
   });
@@ -151,7 +157,7 @@ function ConfirmScreen() {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isValid },
   } = useForm<ConfirmFormValues>({
     defaultValues: isEditMode
       ? {
@@ -202,6 +208,7 @@ function ConfirmScreen() {
     if (values.category === '') return;
 
     setSubmitError(null);
+    setIsLoading(true);
     const payload: CreateReceiptPayload = {
       merchant: values.merchant,
       itemName: values.itemName || undefined,
@@ -210,10 +217,8 @@ function ConfirmScreen() {
       date: values.date,
       rawText: rawText || undefined,
     };
-    // 여기서 await하는 이유는 순전히 react-hook-form의 isSubmitting을 mutation이 끝날
-    // 때까지 true로 유지해서(=저장하기 버튼 로딩 상태) 저장 중 중복 클릭을 막기 위함.
     // catch는 onError가 이미 처리한 rejection이 unhandled promise rejection으로
-    // 새어나가는 것만 막는 용도(에러 문구는 onError에서 이미 세팅됨).
+    // 새어나가는 것만 막는 용도(에러 문구/isLoading 해제는 onError에서 이미 처리됨).
     if (isEditMode) {
       await updateReceipt(payload).catch(() => {});
     } else {
@@ -607,13 +612,13 @@ function ConfirmScreen() {
         )}
         <TouchableOpacity
           testID="save-button"
-          disabled={!isValid || isSubmitting}
+          disabled={!isValid || isLoading}
           onPress={() => handleSubmit(onSubmit)()}
           className={`items-center rounded-2xl bg-primary py-4 ${
             isValid ? '' : 'opacity-40'
           }`}
         >
-          {isSubmitting ? (
+          {isLoading ? (
             <View className="py-0.5">
               <ActivityIndicator testID="save-loading" color="#ffffff" />
             </View>

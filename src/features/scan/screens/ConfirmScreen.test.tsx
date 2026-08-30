@@ -381,33 +381,6 @@ test('저장하기를 누르면 postReceipt를 호출하고 성공하면 이전 
   });
 });
 
-test('저장에 성공하면 홈의 receipt 쿼리들을 무효화해서 다시 fetch되게 한다', async () => {
-  mockedScanText.mockResolvedValue(RAW_TEXT_SUCCESS);
-  mockedPostReceipt.mockResolvedValue({});
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
-  const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
-
-  await render(
-    <QueryClientProvider client={queryClient}>
-      <ConfirmScreen />
-    </QueryClientProvider>,
-  );
-  await waitFor(() => {
-    expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
-  });
-  await fireEvent.press(screen.getByTestId('category-food'));
-
-  await fireEvent.press(screen.getByText('저장하기'));
-
-  await waitFor(() => {
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: receiptQueryFactory._def,
-    });
-  });
-});
-
 test('저장이 진행되는 동안 버튼이 비활성화되고 저장하기 대신 로딩 인디케이터를 보여준다', async () => {
   mockedScanText.mockResolvedValue(RAW_TEXT_SUCCESS);
   let resolvePostReceipt: (value: unknown) => void = () => {};
@@ -540,7 +513,7 @@ describe('수정 모드 (route.params.info가 있을 때)', () => {
     expect(screen.queryByText('저장하기')).toBeNull();
   });
 
-  test('수정하기를 누르면 patchReceipt를 호출하고, 성공하면 해당 영수증의 상세/리스트 쿼리를 무효화한 뒤 한 번만 뒤로간다', async () => {
+  test('수정하기를 누르면 patchReceipt를 호출하고, 성공하면 해당 영수증의 상세 쿼리를 무효화한 뒤 한 번만 뒤로간다', async () => {
     mockedPatchReceipt.mockResolvedValue({});
     const queryClient = new QueryClient({
       defaultOptions: {
@@ -571,10 +544,9 @@ describe('수정 모드 (route.params.info가 있을 때)', () => {
       });
       expect(invalidateQueriesSpy).toHaveBeenCalledWith({
         queryKey: receiptQueryFactory.detail('1').queryKey,
+        refetchType: 'all',
       });
-      expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-        queryKey: receiptQueryFactory.list().queryKey,
-      });
+      expect(invalidateQueriesSpy).toHaveBeenCalledTimes(1);
       // Confirm이 Detail 위에 push된 것뿐이라(같은 Stacks 안) 한 번만 뒤로가면
       // 정확히 그 Detail로 돌아간다 — 생성 때와 달리 Home으로 더 이동할 필요 없음.
       expect(mockGoBack).toHaveBeenCalledTimes(1);

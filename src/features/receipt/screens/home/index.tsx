@@ -1,7 +1,11 @@
-import { useNavigation, useScrollToTop } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useScrollToTop,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -71,6 +75,17 @@ function HomeScreen({
         : allPages.length * PAGE_SIZE,
   });
   const receipts = listQuery.data?.pages.flatMap(page => page.data) ?? [];
+
+  // 다른 화면(스캔/수정/삭제)에서 생긴 변경이 invalidateQueries 없이도 확실히
+  // 반영되도록, Home이 실제로 포커스될 때마다 직접 refetch한다 — mutation 쪽
+  // invalidateQueries의 active 판정 타이밍에 기대는 것보다 안정적으로 확인됨.
+  useFocusEffect(
+    useCallback(() => {
+      summaryQuery.refetch();
+      listQuery.refetch();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
 
   // 로딩 중엔 실데이터 대신 스켈레톤 행을 data로 흘려서 FlatList가 그대로 렌더링하게 함.
   const rows: ListRow[] = listQuery.isLoading ? SKELETON_ROWS : receipts;

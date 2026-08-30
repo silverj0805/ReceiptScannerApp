@@ -10,7 +10,6 @@ import {
 import { http, HttpResponse } from 'msw';
 import { Alert } from 'react-native';
 
-import { receiptQueryFactory } from '@/features/receipt/api';
 import type { Receipt } from '@/features/receipt/api/types/receipt';
 import { server } from '@/mocks/server';
 
@@ -217,11 +216,12 @@ test('삭제 버튼을 누르면 확인 Alert을 띄우고, 확인 전에는 삭
   expect(mockGoBack).not.toHaveBeenCalled();
 });
 
-test('Alert에서 확인하면 삭제 API를 호출하고, 성공하면 리스트 쿼리를 무효화한 뒤 뒤로간다', async () => {
+test('Alert에서 확인하면 삭제 API를 호출하고, 성공하면 뒤로간다', async () => {
+  // 목록 갱신은 더 이상 이 화면의 invalidateQueries가 아니라 돌아갈 화면의
+  // useFocusEffect가 담당(HomeScreen/ReceiptListScreen 테스트 참고).
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
 
   const { unmount } = await render(
     <QueryClientProvider client={queryClient}>
@@ -236,12 +236,6 @@ test('Alert에서 확인하면 삭제 API를 호출하고, 성공하면 리스�
   await pressDestructiveAlertButton();
 
   await waitFor(() => {
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: receiptQueryFactory.list().queryKey,
-    });
-    expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-      queryKey: receiptQueryFactory.summary().queryKey,
-    });
     expect(mockGoBack).toHaveBeenCalled();
   });
 

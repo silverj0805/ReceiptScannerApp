@@ -1,7 +1,7 @@
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
@@ -24,7 +24,6 @@ import Icon from '@/shared/components/ui/Icon';
 import { getCategoryInfo } from '@/shared/utils/category';
 
 function ReceiptDetailScreen() {
-  const queryClient = useQueryClient();
   const backgroundColor = useCSSVariable('--color-background');
 
   const navigation = useNavigation<NativeStackNavigationProp<StackParamList>>();
@@ -34,6 +33,7 @@ function ReceiptDetailScreen() {
   // 인식된 원문은 상세 화면에선 기본적으로 펼쳐서 바로 보여줌(목업 기본값과 동일).
   const [showRaw, setShowRaw] = useState(true);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const detailQuery = useQuery(receiptQueryFactory.detail(receiptId));
 
@@ -42,15 +42,13 @@ function ReceiptDetailScreen() {
   const deleteMutation = useMutation({
     mutationFn: () => receiptRepository.deleteReceipt(receiptId),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: receiptQueryFactory.list().queryKey,
-      });
-      queryClient.invalidateQueries({
-        queryKey: receiptQueryFactory.summary().queryKey,
-      });
-      navigation.goBack();
+      // 목록 갱신은 invalidateQueries에 기대지 않음 — 돌아갈 화면(Home/
+      // ReceiptListScreen)이 useFocusEffect로 포커스될 때마다 직접 refetch한다.
+      setIsDeleting(false);
+      goBack();
     },
     onError: () => {
+      setIsDeleting(false);
       setDeleteError('삭제에 실패했어요. 다시 시도해주세요.');
     },
   });
@@ -62,7 +60,10 @@ function ReceiptDetailScreen() {
       {
         text: '삭제',
         style: 'destructive',
-        onPress: () => deleteMutation.mutate(),
+        onPress: () => {
+          setIsDeleting(true);
+          deleteMutation.mutate();
+        },
       },
     ]);
   };
@@ -208,13 +209,13 @@ function ReceiptDetailScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             testID="detail-delete-button"
-            disabled={deleteMutation.isPending}
+            disabled={isDeleting}
             onPress={confirmDelete}
             className={`flex-1 items-center rounded-2xl border border-[#e7c8c5] bg-white py-3.5 ${
-              deleteMutation.isPending ? 'opacity-40' : ''
+              isDeleting ? 'opacity-40' : ''
             }`}
           >
-            {deleteMutation.isPending ? (
+            {isDeleting ? (
               <ActivityIndicator
                 testID="detail-delete-loading"
                 color="#B3261E"

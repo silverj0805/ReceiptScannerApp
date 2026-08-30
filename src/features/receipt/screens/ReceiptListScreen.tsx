@@ -1,9 +1,13 @@
-import { useNavigation, useScrollToTop } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useScrollToTop,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { keepPreviousData, useInfiniteQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -112,6 +116,16 @@ function ReceiptListScreen() {
   const receipts = listQuery.data?.pages.flatMap(page => page.data) ?? [];
   const groups = groupReceiptsByDate(receipts);
   const rows: ListRow[] = listQuery.isLoading ? SKELETON_ROWS : groups;
+
+  // HomeScreen과 동일한 이유 — 다른 화면(스캔/수정/삭제)에서 생긴 변경이
+  // invalidateQueries 없이도 확실히 반영되도록, 이 화면이 실제로 포커스될 때마다
+  // 직접 refetch한다.
+  useFocusEffect(
+    useCallback(() => {
+      listQuery.refetch();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []),
+  );
 
   const handleEndReached = () => {
     if (listQuery.hasNextPage && !listQuery.isFetchingNextPage) {
