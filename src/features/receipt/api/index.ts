@@ -34,6 +34,9 @@ export const receiptRepository = (() => {
 
     postReceipt: async (payload: CreateReceiptPayload) =>
       client.post<CreateReceiptResponse>(BASE_URL, payload),
+
+    getReceiptById: async (id: string) =>
+      client.get<Receipt>(`${BASE_URL}/${id}`),
   };
 })();
 
@@ -48,5 +51,9 @@ export const receiptQueryFactory = createQueryKeys('receipt', {
   // useInfiniteQuery 호출부(HomeScreen)에서 직접 정의해서 타입 추론을 살린다.
   list: () => ({
     queryKey: ['list'],
+  }),
+  detail: (id: string) => ({
+    queryKey: [id],
+    queryFn: () => receiptRepository.getReceiptById(id),
   }),
 });

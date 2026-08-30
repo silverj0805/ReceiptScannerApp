@@ -1,4 +1,4 @@
-import { useScrollToTop } from '@react-navigation/native';
+import { useNavigation, useScrollToTop } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
@@ -11,7 +11,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
 
-import type { BottomTabParamList } from '@/app/navigation/types';
+import type {
+  BottomTabParamList,
+  RootStackParamList,
+} from '@/app/navigation/types';
 import type { Receipt } from '@/features/receipt/api/types/receipt';
 import EmptyReceipt from '@/features/receipt/components/EmptyReceipt';
 import ReceiptItem from '@/features/receipt/components/recentReceipts/ReceiptItem';
@@ -40,6 +43,14 @@ function HomeScreen({
   const primaryColor = useCSSVariable('--color-primary');
   const scrollRef = useRef<FlatList<ListRow> | null>(null);
   useScrollToTop(scrollRef);
+
+  const rootNavigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const goToDetail = (id: number) =>
+    rootNavigation.navigate('Stacks', {
+      screen: 'Detail',
+      params: { receiptId: String(id) },
+    });
 
   const summaryQuery = useQuery({
     ...receiptQueryFactory.summary(),
@@ -93,10 +104,12 @@ function HomeScreen({
             <ReceiptItemSkeleton />
           ) : (
             <ReceiptItem
+              testID={`receipt-item-${item.id}`}
               title={item.merchant}
               category={item.category}
               date={item.date}
               amount={item.amount}
+              onPress={() => goToDetail(item.id)}
             />
           )
         }
