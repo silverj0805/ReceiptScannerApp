@@ -6,11 +6,17 @@ import {
   Linking,
   Pressable,
   StatusBar,
+  StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useCameraPermission } from 'react-native-vision-camera';
+import {
+  Camera,
+  useCameraDevice,
+  useCameraPermission,
+  usePhotoOutput,
+} from 'react-native-vision-camera';
 
 import type { RootStackParamList } from '@/app/navigation/types';
 import Icon from '@/shared/components/ui/Icon';
@@ -34,13 +40,28 @@ function ScanScreen() {
     }
   }, [isPermissionPending, requestPermission]);
 
+  const device = useCameraDevice('back');
+  const photoOutput = usePhotoOutput();
+
   const close = () => navigation.goBack();
   const toggleFlash = () => setFlashOn(prev => !prev);
   const goToSettings = () => {
     Linking.openSettings();
   };
-  // TODO(패키지 연동): react-native-vision-camera의 photoOutput.capturePhoto()로 교체.
-  const capture = () => {};
+
+  const capture = async () => {
+    const photo = await photoOutput.capturePhoto(
+      { flashMode: flashOn ? 'on' : 'off' },
+      {},
+    );
+    const imageUri = await photo.saveToTemporaryFileAsync();
+    photo.dispose();
+    navigation.navigate('Stacks', {
+      screen: 'Confirm',
+      params: { imageUri },
+    });
+  };
+
   // TODO(패키지 연동): react-native-image-picker의 launchImageLibrary()로 교체.
   const openGallery = () => {};
 
@@ -85,8 +106,17 @@ function ScanScreen() {
     >
       <StatusBar barStyle="light-content" />
       <View className="flex-1 bg-[#141513]">
-        {/* 카메라 프리뷰 자리 — 패키지 연동 단계에서 <Camera/>로 교체 예정 */}
-        <View testID="camera-preview" className="absolute inset-0" />
+        {device != null && (
+          // Camera는 testID를 지원하지 않아서(CameraViewProps에 없음) View로 한 번 감쌈.
+          <View testID="camera-preview" style={StyleSheet.absoluteFill}>
+            <Camera
+              style={StyleSheet.absoluteFill}
+              device={device}
+              isActive
+              outputs={[photoOutput]}
+            />
+          </View>
+        )}
 
         <View pointerEvents="box-none" className="absolute inset-x-0 top-0">
           {/* 헤더 */}

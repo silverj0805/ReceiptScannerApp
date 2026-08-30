@@ -6,8 +6,12 @@ module.exports = {
   // msw는 최신 문법(ESM)으로 배포되고, 의존성들(rettime, @mswjs/*, @open-draft/*,
   // @bundled-es-modules/*, headers-polyfill, strict-event-emitter, outvariant, until-async)도
   // 트랜스파일이 안 된 상태라 여기 다 추가해야 함(공식 커뮤니티 가이드에서도 안내하는 목록).
+  // react-native-vision-camera는 main/module 둘 다 lib/index(ESM 전용, CJS 빌드가 없음)라서
+  // 필수. react-native-image-picker는 main이 아예 src/index.ts(트랜스파일 안 된 TS 원본)라서
+  // 역시 필수. react-native-nitro-modules/nitro-image는 main이 lib/commonjs(CJS)라 원래는
+  // 필요 없지만, vision-camera 내부에서 함께 로드되는 의존 관계라 안전하게 같이 추가.
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-native-firebase|@react-navigation|react-native-safe-area-context|react-native-error-boundary|react-native-skeleton-placeholder|@react-native-masked-view|react-native-linear-gradient|react-native-config|uniwind|msw|rettime|@mswjs|@open-draft|@bundled-es-modules|headers-polyfill|strict-event-emitter|outvariant|until-async)/)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-native-firebase|@react-navigation|react-native-safe-area-context|react-native-error-boundary|react-native-skeleton-placeholder|@react-native-masked-view|react-native-linear-gradient|react-native-config|react-native-vision-camera|react-native-nitro-modules|react-native-nitro-image|react-native-image-picker|uniwind|msw|rettime|@mswjs|@open-draft|@bundled-es-modules|headers-polyfill|strict-event-emitter|outvariant|until-async)/)',
   ],
   // rettime(msw의 의존성)이 .mjs 확장자로 배포되는데, 기본 transform 패턴이
   // js/ts/tsx만 잡고 mjs를 빼먹어서 transformIgnorePatterns를 뚫어놔도 애초에
