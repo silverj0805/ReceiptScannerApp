@@ -1,6 +1,8 @@
 import { ErrorMessage } from '@hookform/error-message';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -8,12 +10,17 @@ import {
   Pressable,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import type { StackParamList } from '@/app/navigation/types';
+import type {
+  RootStackParamList,
+  StackParamList,
+} from '@/app/navigation/types';
+import { receiptQueryFactory, receiptRepository } from '@/features/receipt/api';
 import type { CategoryId } from '@/features/receipt/api/types/category';
 import Icon from '@/shared/components/ui/Icon';
 import { getCategoryInfo } from '@/shared/utils/category';
@@ -48,7 +55,10 @@ const DEFAULT_VALUES: ConfirmFormValues = {
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 function ConfirmScreen() {
-  const navigation = useNavigation();
+  const queryClient = useQueryClient();
+
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<StackParamList, 'Confirm'>>();
   const { imageUri } = route.params;
 
@@ -56,12 +66,25 @@ function ConfirmScreen() {
   const [rawText, setRawText] = useState<string | null>(null);
   const [manualEntry, setManualEntry] = useState(false);
   const [showRaw, setShowRaw] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const { mutateAsync: createReceipt } = useMutation({
+    mutationFn: receiptRepository.postReceipt,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: receiptQueryFactory._def });
+      navigation.goBack();
+      navigation.navigate('BottomTabs', { screen: 'Home' });
+    },
+    onError: () => {
+      setSubmitError('저장에 실패했어요. 다시 시도해주세요.');
+    },
+  });
 
   const {
     control,
     handleSubmit,
     reset,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isSubmitting },
   } = useForm<ConfirmFormValues>({
     defaultValues: DEFAULT_VALUES,
     // 필드가 바뀔 때마다 다시 검증해서 저장하기 버튼 활성화 여부가 실시간으로 반영되게 함.
@@ -93,8 +116,20 @@ function ConfirmScreen() {
 
   const goBack = () => navigation.goBack();
   const enterManually = () => setManualEntry(true);
-  // TODO(다음 단계): POST /receipts 연동.
-  const onSubmit = () => {};
+
+  const onSubmit = async (values: ConfirmFormValues) => {
+    // category는 rules={{required}}로 검증되므로 여기 도달했다면 항상 채워져 있음 — 타입 좁히기용.
+    if (values.category === '') return;
+
+    setSubmitError(null);
+    createReceipt({
+      merchant: values.merchant,
+      amount: Number(values.amount),
+      category: values.category,
+      date: values.date,
+      rawText: rawText || undefined,
+    });
+  };
 
   if (rawText === null) {
     return (
@@ -359,18 +394,27 @@ function ConfirmScreen() {
       </KeyboardAwareScrollView>
 
       <View className="border-t border-[#e8e6e1] bg-background px-5 pb-7 pt-4">
-        <Pressable
+        {submitError && (
+          <Text className="mb-2 text-center text-xs text-[#B3261E]">
+            {submitError}
+          </Text>
+        )}
+        <TouchableOpacity
           testID="save-button"
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
           onPress={() => handleSubmit(onSubmit)()}
-          className={
-            isValid
-              ? 'items-center rounded-2xl bg-primary py-4'
-              : 'items-center rounded-2xl bg-primary py-4 opacity-40'
-          }
+          className={`items-center rounded-2xl bg-primary py-4 ${
+            isValid ? '' : 'opacity-40'
+          }`}
         >
-          <Text className="text-[15px] font-bold text-white">저장하기</Text>
-        </Pressable>
+          {isSubmitting ? (
+            <View className="py-0.5">
+              <ActivityIndicator testID="save-loading" color="#ffffff" />
+            </View>
+          ) : (
+            <Text className="text-base font-bold text-white">저장하기</Text>
+          )}
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

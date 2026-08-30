@@ -2,7 +2,11 @@ import { createQueryKeys } from '@lukemorales/query-key-factory';
 
 import client from '@/shared/api/client';
 
-import { Receipt } from './types/receipt';
+import {
+  CreateReceiptPayload,
+  CreateReceiptResponse,
+  Receipt,
+} from './types/receipt';
 import type { ReceiptSummary } from './types/summary';
 
 export const PAGE_SIZE = 4;
@@ -15,6 +19,9 @@ export const receiptRepository = (() => {
 
     getList: async ({ take, skip }: { take: number; skip: number }) =>
       client.get<Receipt[]>(BASE_URL, { params: { take, skip } }),
+
+    postReceipt: async (payload: CreateReceiptPayload) =>
+      client.post<CreateReceiptResponse>(BASE_URL, payload),
   };
 })();
 
