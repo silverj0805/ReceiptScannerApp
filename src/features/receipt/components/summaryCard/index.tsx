@@ -6,11 +6,17 @@ import { getCategoryInfo } from '@/shared/utils/category';
 
 export interface SummaryCardProps {
   total: number;
+  deltaAmount: number;
   deltaPercent: number;
   byCategory: CategorySummary[];
 }
 
-function SummaryCard({ total, deltaPercent, byCategory }: SummaryCardProps) {
+function SummaryCard({
+  total,
+  deltaAmount,
+  deltaPercent,
+  byCategory,
+}: SummaryCardProps) {
   return (
     <Box className="w-full gap-3.5">
       <View className="gap-1.5">
@@ -20,24 +26,17 @@ function SummaryCard({ total, deltaPercent, byCategory }: SummaryCardProps) {
             ₩{total.toLocaleString('ko-KR')}
           </Text>
           {deltaPercent !== 0 && (
-            <Text
-              className={`rounded-full px-2 py-0.75 text-xs font-bold ${
-                deltaPercent < 0
-                  ? 'bg-[#e3eee8] text-primary'
-                  : 'bg-[#ffe3e3] text-[#dc2626]'
-              }`}
-            >
+            <Text className={`font-medium`}>
+              지난 달 대비{' '}
               <Text
-                className={`text-xs font-medium ${
-                  deltaPercent < 0
-                    ? 'bg-[#e3eee8] text-primary'
-                    : 'bg-[#ffe3e3] text-[#dc2626]'
+                className={`font-bold ${
+                  deltaPercent < 0 ? 'text-primary' : 'text-[#dc2626]'
                 }`}
               >
-                지난 달 대비{' '}
-              </Text>
-              {deltaPercent > 0 ? '+' : ''}
-              {deltaPercent}%
+                {deltaAmount.toLocaleString('ko-KR')}원{' '}
+                {deltaPercent > 0 ? '더' : '덜'}
+              </Text>{' '}
+              쓰고 있어요.
             </Text>
           )}
         </View>

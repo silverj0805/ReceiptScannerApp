@@ -7,6 +7,7 @@ import type { ReceiptSummary } from '@/features/receipt/api/types/summary';
 // GET /receipts/summary — 리스트 없이 집계만 내려줌.
 const summaryFixture: ReceiptSummary = {
   total: 842300,
+  deltaAmount: -114900,
   deltaPercent: -12,
   byCategory: [
     { category: 'food', amount: 353766, percent: 42 },

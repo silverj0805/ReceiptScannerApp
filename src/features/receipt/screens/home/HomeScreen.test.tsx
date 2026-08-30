@@ -63,7 +63,9 @@ test('데이터 도착 후 이번 달 지출 요약을 보여준다', async () =
 
   await waitFor(() => {
     expect(screen.getByText('₩842,300')).toBeTruthy();
-    expect(screen.getByText('지난 달 대비 -12%')).toBeTruthy();
+    expect(
+      screen.getByText('지난 달 대비 -114,900원 덜 쓰고 있어요.'),
+    ).toBeTruthy();
     // list 쿼리도 같이 settle될 때까지 기다려서 act 경고를 막음.
     expect(screen.getByText('스타벅스 강남점')).toBeTruthy();
   });
@@ -103,6 +105,7 @@ test('영수증이 하나도 없으면 요약 금액/증감률을 0으로 보여
   // 이 테스트에서만 summary 응답을 빈 상태로 덮어씀
   const emptySummary: ReceiptSummary = {
     total: 0,
+    deltaAmount: 0,
     deltaPercent: 0,
     byCategory: [],
   };
