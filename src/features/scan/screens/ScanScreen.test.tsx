@@ -36,6 +36,9 @@ jest.mock('react-native-vision-camera', () => {
     Camera: (props: Record<string, unknown>) => (
       <View testID="camera" {...props} />
     ),
+    // 값 자체는 실제로 안 쓰이고(usePhotoOutput이 통째로 목 처리됨) ScanScreen.tsx가
+    // import 시점에 CommonResolutions.UHD_4_3을 참조하므로 존재만 하면 됨.
+    CommonResolutions: { UHD_4_3: { width: 3024, height: 4032 } },
     useCameraDevice: jest.fn(),
     useCameraPermission: jest.fn(),
     usePhotoOutput: jest.fn(),
@@ -172,6 +175,18 @@ test('카메라 초기화에 실패해도 로딩 스피너가 계속 뜨지 않�
   });
 });
 
+test('헤더 아래에 인식률을 높이는 촬영 팁 안내 문구를 보여준다', async () => {
+  setPermission({ hasPermission: true, canRequestPermission: false });
+
+  await render(<ScanScreen />);
+
+  expect(
+    screen.getByText(
+      '예: 인식률을 높이기 위해 선명한 화질로 필요한 정보만 가까이서 찍어주세요',
+    ),
+  ).toBeTruthy();
+});
+
 test('닫기 버튼을 누르면 이전 화면으로 돌아간다', async () => {
   setPermission({ hasPermission: true, canRequestPermission: false });
 
@@ -198,6 +213,45 @@ test('촬영 버튼을 누르면 사진을 찍어서 확인 화면으로 이동�
   expect(mockCapturePhoto).toHaveBeenCalledWith({ flashMode: 'off' }, {});
   expect(mockSaveToTemporaryFileAsync).toHaveBeenCalled();
   expect(mockDispose).toHaveBeenCalled();
+});
+
+test('촬영 중에는 버튼이 비활성화돼서 연속 촬영을 막는다', async () => {
+  mockCapturePhoto.mockReturnValue(new Promise(() => {})); // 영원히 pending
+  setPermission({ hasPermission: true, canRequestPermission: false });
+
+  await render(<ScanScreen />);
+
+  // capturePhoto가 영원히 pending이라 await하면(act flush가 끝나길 기다림) 테스트가
+  // 타임아웃남(ConfirmScreen의 저장 중 로딩 테스트와 동일한 이유) — await 없이
+  // 이벤트만 트리거하고 waitFor로 결과만 폴링.
+  fireEvent.press(screen.getByTestId('scan-capture-button'));
+
+  await waitFor(() => {
+    expect(
+      screen.getByTestId('scan-capture-button').props.accessibilityState
+        .disabled,
+    ).toBe(true);
+  });
+
+  // 비활성화된 상태에서 다시 눌러도 capturePhoto가 중복 호출되지 않아야 함.
+  fireEvent.press(screen.getByTestId('scan-capture-button'));
+  expect(mockCapturePhoto).toHaveBeenCalledTimes(1);
+});
+
+test('촬영이 실패하면 다시 촬영할 수 있게 버튼이 풀린다', async () => {
+  mockCapturePhoto.mockRejectedValue(new Error('CAPTURE_ERROR'));
+  setPermission({ hasPermission: true, canRequestPermission: false });
+
+  await render(<ScanScreen />);
+
+  await fireEvent.press(screen.getByTestId('scan-capture-button'));
+
+  await waitFor(() => {
+    expect(
+      screen.getByTestId('scan-capture-button').props.accessibilityState
+        .disabled,
+    ).toBe(false);
+  });
 });
 
 test('촬영 결과 경로에 스킴이 없으면 file:// 스킴을 붙여서 넘긴다', async () => {

@@ -13,6 +13,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   Camera,
+  CommonResolutions,
   useCameraDevice,
   useCameraPermission,
   usePhotoOutput,
@@ -29,6 +30,8 @@ function ScanScreen() {
   // 준비 중임을 알 수 있는 스피너를 따로 보여준다. onError가 나도 무한 스피너로
   // 안 남게 준비 완료로 취급한다(검정 화면이 낫지, 영원히 도는 스피너보단).
   const [isCameraReady, setIsCameraReady] = useState(false);
+  // 촬영 버튼 연타로 capturePhoto()가 중복 호출되는 걸 막는 방어 코드.
+  const [isCapturing, setIsCapturing] = useState(false);
 
   const { hasPermission, canRequestPermission, requestPermission } =
     useCameraPermission();
@@ -43,7 +46,13 @@ function ScanScreen() {
   }, [isPermissionPending, requestPermission]);
 
   const device = useCameraDevice('back');
-  const photoOutput = usePhotoOutput();
+  // 영수증은 글씨가 작고 촘촘해서 기본 해상도/화질로는 OCR이 특히 상호명처럼
+  // 작은 텍스트에서 잘못된 글자를 읽는 경우가 실기기 테스트에서 확인됨 —
+  // 4:3 고해상도 타겟 + 'quality' 프라이오리티(캡처 속도보다 노출/화질 우선)로 올림.
+  const photoOutput = usePhotoOutput({
+    targetResolution: CommonResolutions.UHD_4_3,
+    qualityPrioritization: 'quality',
+  });
 
   const close = () => navigation.goBack();
   const toggleFlash = () => setFlashOn(prev => !prev);
@@ -52,22 +61,36 @@ function ScanScreen() {
   };
 
   const capture = async () => {
-    const photo = await photoOutput.capturePhoto(
-      { flashMode: flashOn ? 'on' : 'off' },
-      {},
-    );
-    const path = await photo.saveToTemporaryFileAsync();
-    photo.dispose();
-    // react-native-vision-camera는 스킴 없는 순수 파일 경로를 반환한다
-    // (예: /data/user/0/com.silverj0805.receiptscannerapp/cache/VisionCamera_xxx.jpg).
-    // 네이티브 OCR 모듈은 Uri.parse(Kotlin)/URL(string:)(Swift) 둘 다 file:// 스킴이
-    // 있어야 실제 파일을 열 수 있어서, 없으면 이 시점에 붙여준다 — 안 붙이면
-    // scanText가 파일을 못 찾고 조용히 reject되어 "인식 실패" 화면으로 빠진다.
-    const imageUri = path.startsWith('file://') ? path : `file://${path}`;
-    navigation.navigate('Stacks', {
-      screen: 'Confirm',
-      params: { imageUri },
-    });
+    // capturePhoto()가 끝나기 전에 다시 눌려도(연타) 중복으로 찍히지 않게 막는다.
+    if (isCapturing) return;
+    setIsCapturing(true);
+    try {
+      const photo = await photoOutput.capturePhoto(
+        { flashMode: flashOn ? 'on' : 'off' },
+        {},
+      );
+      const path = await photo.saveToTemporaryFileAsync();
+      photo.dispose();
+      // react-native-vision-camera는 스킴 없는 순수 파일 경로를 반환한다
+      // (예: /data/user/0/com.silverj0805.receiptscannerapp/cache/VisionCamera_xxx.jpg).
+      // 네이티브 OCR 모듈은 Uri.parse(Kotlin)/URL(string:)(Swift) 둘 다 file:// 스킴이
+      // 있어야 실제 파일을 열 수 있어서, 없으면 이 시점에 붙여준다 — 안 붙이면
+      // scanText가 파일을 못 찾고 조용히 reject되어 "인식 실패" 화면으로 빠진다.
+      const imageUri = path.startsWith('file://') ? path : `file://${path}`;
+      navigation.navigate('Stacks', {
+        screen: 'Confirm',
+        params: { imageUri },
+      });
+    } catch {
+      // 촬영 자체가 실패하는 경우(드묾) 조용히 무시 — catch 없이 두면 onPress가
+      // 반환하는 프라미스를 아무도 안 받아서 unhandled rejection으로 새어나간다
+      // (ConfirmScreen의 scanText가 같은 이유로 .catch()를 두는 것과 동일).
+      // 버튼은 finally에서 풀리니 사용자가 다시 시도하면 됨.
+    } finally {
+      // 성공하면 다음 화면으로 넘어가니 굳이 안 풀어도 되지만, 촬영 자체가 실패한
+      // 경우엔 다시 찍을 수 있어야 하므로 항상 풀어준다.
+      setIsCapturing(false);
+    }
   };
 
   const openGallery = async () => {
@@ -184,6 +207,21 @@ function ScanScreen() {
             </Pressable> */}
           </View>
 
+          {/* 인식률 안내 문구 */}
+          <View pointerEvents="none" className="mt-3 items-center px-5">
+            <View className="flex-row items-center gap-1.5 rounded-full bg-[rgba(0,0,0,0.45)] px-4 py-2">
+              <Icon
+                name="information-circle-outline"
+                size={14}
+                colorClassName="accent-white"
+              />
+              <Text className="flex-1 text-xs font-semibold text-white">
+                예: 인식률을 높이기 위해 선명한 화질로 필요한 정보만 가까이서
+                찍어주세요
+              </Text>
+            </View>
+          </View>
+
           {/* 프레임 가이드 + 안내 문구  */}
           {/* <View pointerEvents="none" className="mt-5 items-center gap-3">
             <View className="rounded-full bg-[rgba(0,0,0,0.45)] px-4 py-2">
@@ -215,8 +253,11 @@ function ScanScreen() {
           <Pressable
             testID="scan-capture-button"
             onPress={capture}
+            disabled={isCapturing}
             hitSlop={8}
-            className="h-18 w-18 items-center justify-center rounded-full border-4 border-white"
+            className={`h-18 w-18 items-center justify-center rounded-full border-4 border-white ${
+              isCapturing ? 'opacity-40' : ''
+            }`}
           >
             <View className="h-14.5 w-14.5 rounded-full bg-white" />
           </Pressable>
