@@ -1,35 +1,70 @@
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Pressable,
   ScrollView,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useCSSVariable } from 'uniwind';
 
 import type { StackParamList } from '@/app/navigation/types';
-import { receiptQueryFactory } from '@/features/receipt/api';
+import { receiptQueryFactory, receiptRepository } from '@/features/receipt/api';
 import Icon from '@/shared/components/ui/Icon';
 import { getCategoryInfo } from '@/shared/utils/category';
 
 function ReceiptDetailScreen() {
+  const queryClient = useQueryClient();
+  const backgroundColor = useCSSVariable('--color-background');
+
   const navigation = useNavigation();
   const route = useRoute<RouteProp<StackParamList, 'Detail'>>();
   const { receiptId } = route.params;
 
   // 인식된 원문은 상세 화면에선 기본적으로 펼쳐서 바로 보여줌(목업 기본값과 동일).
   const [showRaw, setShowRaw] = useState(true);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const detailQuery = useQuery(receiptQueryFactory.detail(receiptId));
 
   const goBack = () => navigation.goBack();
+
+  const deleteMutation = useMutation({
+    mutationFn: () => receiptRepository.deleteReceipt(receiptId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: receiptQueryFactory.list().queryKey,
+      });
+      queryClient.invalidateQueries({
+        queryKey: receiptQueryFactory.summary().queryKey,
+      });
+      navigation.goBack();
+    },
+    onError: () => {
+      setDeleteError('삭제에 실패했어요. 다시 시도해주세요.');
+    },
+  });
+
+  const confirmDelete = () => {
+    setDeleteError(null);
+    Alert.alert('영수증을 삭제할까요?', '삭제하면 다시 되돌릴 수 없어요.', [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '삭제',
+        style: 'destructive',
+        onPress: () => deleteMutation.mutate(),
+      },
+    ]);
+  };
 
   if (detailQuery.isLoading) {
     return (
@@ -80,8 +115,7 @@ function ReceiptDetailScreen() {
   return (
     <SafeAreaView
       edges={['top', 'bottom']}
-      style={{ flex: 1 }}
-      className="bg-background"
+      style={{ flex: 1, backgroundColor }}
     >
       <View className="flex-row items-center justify-between p-5">
         <Pressable testID="detail-back-button" onPress={goBack} hitSlop={8}>
@@ -91,11 +125,17 @@ function ReceiptDetailScreen() {
         <View className="w-5.5" />
       </View>
 
-      <ScrollView contentContainerClassName="gap-3.5 px-5 pb-5">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerClassName="gap-3.5 px-5 pb-5"
+      >
         {/* 영수증 정보 */}
         <View className="gap-2.5 rounded-2xl border border-[#e8e6e1] bg-white p-4.5">
           <View className="flex-row items-center justify-between">
-            <Text className="text-base font-bold text-black">
+            <Text
+              testID="detail-merchant"
+              className="text-base font-bold text-black"
+            >
               가맹점 : {receipt.merchant}
             </Text>
             <View
@@ -150,13 +190,34 @@ function ReceiptDetailScreen() {
         )}
       </ScrollView>
 
-      {/* 수정/삭제 — API 스펙이 아직 없어서 UI만 배치, 동작은 추후 연결 */}
-      <View className="flex-row gap-2.5 border-t border-[#e8e6e1] bg-background px-5 pb-7 pt-4">
-        <View className="flex-1 items-center rounded-2xl border border-[#e8e6e1] bg-white py-3.5">
-          <Text className="text-sm font-bold text-black">수정</Text>
-        </View>
-        <View className="flex-1 items-center rounded-2xl border border-[#e7c8c5] bg-white py-3.5">
-          <Text className="text-sm font-bold text-[#B3261E]">삭제</Text>
+      <View className="border-t border-[#e8e6e1] bg-background px-5 pb-7 pt-4">
+        {deleteError && (
+          <Text className="mb-2 text-center text-xs text-[#B3261E]">
+            {deleteError}
+          </Text>
+        )}
+        <View className="flex-row gap-2.5">
+          {/* 수정 — API 스펙이 아직 없어서 UI만 배치, 동작은 추후 연결 */}
+          <View className="flex-1 items-center rounded-2xl border border-[#e8e6e1] bg-white py-3.5">
+            <Text className="text-sm font-bold text-black">수정</Text>
+          </View>
+          <TouchableOpacity
+            testID="detail-delete-button"
+            disabled={deleteMutation.isPending}
+            onPress={confirmDelete}
+            className={`flex-1 items-center rounded-2xl border border-[#e7c8c5] bg-white py-3.5 ${
+              deleteMutation.isPending ? 'opacity-40' : ''
+            }`}
+          >
+            {deleteMutation.isPending ? (
+              <ActivityIndicator
+                testID="detail-delete-loading"
+                color="#B3261E"
+              />
+            ) : (
+              <Text className="text-sm font-bold text-[#B3261E]">삭제</Text>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
