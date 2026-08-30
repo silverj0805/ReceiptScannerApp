@@ -1,0 +1,258 @@
+<title>모으곰(Mogom) 이용약관</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+  :root {
+    --bg: #F7F6F3;
+    --surface: #FFFFFF;
+    --text: #1C1B1A;
+    --text-soft: #6F6D68;
+    --border: #E8E6E1;
+    --accent: #1B5E43;
+    --accent-soft: #E3EEE8;
+    --accent-text-on-soft: #1B5E43;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17160F;
+      --surface: #201F19;
+      --text: #F3F1EA;
+      --text-soft: #A19C8E;
+      --border: #34322A;
+      --accent: #59C08F;
+      --accent-soft: #1E3329;
+      --accent-text-on-soft: #7CD6A6;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #17160F;
+    --surface: #201F19;
+    --text: #F3F1EA;
+    --text-soft: #A19C8E;
+    --border: #34322A;
+    --accent: #59C08F;
+    --accent-soft: #1E3329;
+    --accent-text-on-soft: #7CD6A6;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 64px 24px 96px;
+  }
+
+  header.doc-head {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 56px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(26px, 4vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .date-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-text-on-soft);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: 6px 12px;
+  }
+
+  main {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h2 .jo {
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  h2 .purpose {
+    color: var(--text-soft);
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0;
+    font-size: 15.5px;
+    line-height: 1.8;
+    color: var(--text);
+    max-width: 62ch;
+  }
+
+  ol.clauses {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: clause;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  ol.clauses li {
+    counter-increment: clause;
+    position: relative;
+    padding-left: 26px;
+    font-size: 15.5px;
+    line-height: 1.75;
+    color: var(--text);
+    max-width: 62ch;
+  }
+
+  ol.clauses li::before {
+    content: counter(clause);
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  footer.doc-foot {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-soft);
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { scroll-behavior: auto !important; }
+  }
+</style>
+
+<div class="page">
+  <header class="doc-head">
+    <span class="eyebrow">모으곰(Mogom)</span>
+    <h1>이용약관</h1>
+    <div class="meta-row">
+      <span class="date-pill">시행일자 2026년 8월 30일</span>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2><span class="jo">제1조</span> <span class="purpose">(목적)</span></h2>
+      <p>
+        이 약관은 '모으곰(Mogom)'(이하 '본 앱')가 제공하는 서비스의 이용과
+        관련하여 이용자와 개발자 간의 권리, 의무 및 책임사항을 규정함을
+        목적으로 합니다.
+      </p>
+    </section>
+
+    <section>
+      <h2><span class="jo">제2조</span> <span class="purpose">(서비스의 내용)</span></h2>
+      <p>본 앱은 다음과 같은 기능을 제공합니다.</p>
+      <ol class="clauses">
+        <li>카메라 촬영 또는 사진을 통한 영수증 텍스트 자동 인식</li>
+        <li>인식되거나 직접 입력한 지출 내역의 저장, 조회, 수정, 삭제</li>
+        <li>카테고리·기간별 지출 내역 필터링 및 통계 제공</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2><span class="jo">제3조</span> <span class="purpose">(서비스 이용)</span></h2>
+      <ol class="clauses">
+        <li>본 앱은 별도의 회원가입 없이 기기 단위로 서비스를 제공합니다.</li>
+        <li>이용자가 기기를 변경하거나 앱을 삭제 후 재설치하는 경우, 기존에 저장된 지출 내역은 복구되지 않을 수 있습니다.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2><span class="jo">제4조</span> <span class="purpose">(이용자의 의무)</span></h2>
+      <p>이용자는 본 앱을 이용함에 있어 다음 행위를 하여서는 안 됩니다.</p>
+      <ol class="clauses">
+        <li>서비스의 정상적인 운영을 방해하는 행위</li>
+        <li>타인의 기기 식별자나 데이터에 부정하게 접근하는 행위</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2><span class="jo">제5조</span> <span class="purpose">(면책조항)</span></h2>
+      <ol class="clauses">
+        <li>본 앱이 제공하는 영수증 텍스트 자동 인식 기능은 촬영 환경, 인쇄 상태 등에 따라 인식률에 차이가 있을 수 있으며, 인식 결과의 정확성을 보장하지 않습니다. 이용자는 저장 전 인식된 내용을 반드시 확인해야 합니다.</li>
+        <li>개발자는 천재지변, 기기 오류, 네트워크 장애 등 개발자의 고의 또는 과실이 없는 사유로 발생한 서비스 중단이나 데이터 손실에 대해 책임을 지지 않습니다.</li>
+        <li>본 앱은 개인 가계부 기록을 돕기 위한 도구이며, 세무·회계 등 전문적인 목적으로 사용하는 경우 그 정확성에 대해 책임지지 않습니다.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2><span class="jo">제6조</span> <span class="purpose">(약관의 변경)</span></h2>
+      <p>
+        개발자는 필요한 경우 이 약관을 변경할 수 있으며, 변경된 약관은 앱 내
+        공지 또는 업데이트를 통해 공지합니다.
+      </p>
+    </section>
+  </main>
+
+  <footer class="doc-foot">
+    본 약관은 2026년 8월 30일부터 시행됩니다.
+  </footer>
+</div>

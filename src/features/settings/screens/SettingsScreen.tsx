@@ -6,6 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import type { StackParamList } from '@/app/navigation/types';
 import Icon from '@/shared/components/ui/Icon';
 
+import {
+  PRIVACY_POLICY_URL,
+  TERMS_OF_SERVICE_URL,
+} from '../constants/urls';
+
 function SettingsScreen({
   navigation,
 }: {
@@ -13,6 +18,16 @@ function SettingsScreen({
 }) {
   const goBack = () => navigation.goBack();
   const goToLicense = () => navigation.navigate('License');
+  const goToPrivacyPolicy = () =>
+    navigation.navigate('WebView', {
+      url: PRIVACY_POLICY_URL,
+      title: '개인정보처리방침',
+    });
+  const goToTermsOfService = () =>
+    navigation.navigate('WebView', {
+      url: TERMS_OF_SERVICE_URL,
+      title: '이용약관',
+    });
 
   return (
     <SafeAreaView
@@ -29,6 +44,26 @@ function SettingsScreen({
       </View>
 
       <ScrollView contentContainerClassName="px-5">
+        <Pressable
+          testID="settings-privacy-policy-row"
+          onPress={goToPrivacyPolicy}
+          className="flex-row items-center justify-between border-b border-[#e8e6e1] py-4"
+        >
+          <Text className="text-sm font-semibold text-black">
+            개인정보처리방침
+          </Text>
+          <Icon name="chevron-forward" size={18} colorClassName="accent-gray" />
+        </Pressable>
+
+        <Pressable
+          testID="settings-terms-of-service-row"
+          onPress={goToTermsOfService}
+          className="flex-row items-center justify-between border-b border-[#e8e6e1] py-4"
+        >
+          <Text className="text-sm font-semibold text-black">이용약관</Text>
+          <Icon name="chevron-forward" size={18} colorClassName="accent-gray" />
+        </Pressable>
+
         <Pressable
           testID="settings-license-row"
           onPress={goToLicense}

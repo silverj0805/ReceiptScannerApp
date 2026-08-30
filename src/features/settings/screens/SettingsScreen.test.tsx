@@ -2,6 +2,8 @@ import { useNavigation } from '@react-navigation/native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { getVersion } from 'react-native-device-info';
 
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../constants/urls';
+
 import SettingsScreen from './SettingsScreen';
 
 // ConfirmScreen.test.tsx와 동일한 이유로 useNavigation 훅을 목 처리.
@@ -43,6 +45,28 @@ test('오픈소스 라이센스를 누르면 License 화면으로 이동한다',
   await fireEvent.press(screen.getByTestId('settings-license-row'));
 
   expect(mockNavigate).toHaveBeenCalledWith('License');
+});
+
+test('개인정보처리방침을 누르면 해당 URL로 WebView 화면을 연다', async () => {
+  await render(<SettingsScreen navigation={mockedUseNavigation()} />);
+
+  await fireEvent.press(screen.getByTestId('settings-privacy-policy-row'));
+
+  expect(mockNavigate).toHaveBeenCalledWith('WebView', {
+    url: PRIVACY_POLICY_URL,
+    title: '개인정보처리방침',
+  });
+});
+
+test('이용약관을 누르면 해당 URL로 WebView 화면을 연다', async () => {
+  await render(<SettingsScreen navigation={mockedUseNavigation()} />);
+
+  await fireEvent.press(screen.getByTestId('settings-terms-of-service-row'));
+
+  expect(mockNavigate).toHaveBeenCalledWith('WebView', {
+    url: TERMS_OF_SERVICE_URL,
+    title: '이용약관',
+  });
 });
 
 test('뒤로가기 버튼을 누르면 이전 화면으로 돌아간다', async () => {

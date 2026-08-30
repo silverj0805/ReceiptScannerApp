@@ -28,4 +28,7 @@ export type StackParamList = {
   Detail: { receiptId: string };
   Settings: undefined;
   License: undefined;
+  // 개인정보처리방침/이용약관처럼 외부(노션 등)에 발행된 페이지를 보여줄 때 재사용하는
+  // 범용 WebView 화면. url이 빈 문자열이면 "준비 중" 안내를 보여준다.
+  WebView: { url: string; title: string };
 };

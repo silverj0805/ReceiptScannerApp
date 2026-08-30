@@ -12,8 +12,9 @@ module.exports = {
   // 필요 없지만, vision-camera 내부에서 함께 로드되는 의존 관계라 안전하게 같이 추가.
   // react-native-reanimated/react-native-worklets는 __mocks__/react-native-reanimated.ts로
   // 완전히 대체돼서 실제 소스가 안 불려오니 여기 안 넣어도 됨.
+  // react-native-webview의 index.js가 ESM(import 문)으로 배포돼서(CJS 빌드 없음) 추가.
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-native-firebase|@react-navigation|react-native-safe-area-context|react-native-error-boundary|react-native-skeleton-placeholder|@react-native-masked-view|react-native-linear-gradient|react-native-config|react-native-vision-camera|react-native-nitro-modules|react-native-nitro-image|react-native-image-picker|react-native-keyboard-controller|uniwind|msw|rettime|@mswjs|@open-draft|@bundled-es-modules|headers-polyfill|strict-event-emitter|outvariant|until-async)/)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|@react-native-firebase|@react-navigation|react-native-safe-area-context|react-native-error-boundary|react-native-skeleton-placeholder|@react-native-masked-view|react-native-linear-gradient|react-native-config|react-native-vision-camera|react-native-nitro-modules|react-native-nitro-image|react-native-image-picker|react-native-keyboard-controller|react-native-webview|uniwind|msw|rettime|@mswjs|@open-draft|@bundled-es-modules|headers-polyfill|strict-event-emitter|outvariant|until-async)/)',
   ],
   // rettime(msw의 의존성)이 .mjs 확장자로 배포되는데, 기본 transform 패턴이
   // js/ts/tsx만 잡고 mjs를 빼먹어서 transformIgnorePatterns를 뚫어놔도 애초에
