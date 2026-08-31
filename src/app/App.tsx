@@ -14,6 +14,7 @@ import {
 } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import PrivacyScreenCover from '@/shared/components/PrivacyScreenCover';
 import { recordErrorWithContext } from '@/shared/firebase/crashlyticsRecorder';
 import { useCurrentScreenStore } from '@/shared/store/currentScreen';
 
@@ -52,7 +53,9 @@ function App() {
             }
           />
           <ErrorBoundary onError={handleError}>
-            <RootNavigator />
+            <PrivacyScreenCover>
+              <RootNavigator />
+            </PrivacyScreenCover>
           </ErrorBoundary>
         </SafeAreaProvider>
       </QueryClientProvider>
