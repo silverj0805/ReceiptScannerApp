@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  react-native-bootsplash 라이브러리가 기본 제공하는 동일 이름 리소스
+  (node_modules/react-native-bootsplash/android/.../res/values-v31/styles.xml)를
+  앱 모듈에서 오버라이드한 파일. Android 스타일 리소스는 이름이 같으면 앱 쪽
+  정의가 라이브러리 정의를 통째로 대체한다.
+
+  라이브러리 기본값은 android:windowSplashScreenBrandingImage를 슬로건 이미지로
+  설정하는데, 이건 Android 12+ OS 네이티브 SplashScreen API가 직접 그리는
+  거라 크기를 앱에서 제어할 수 없다(공식 문서에 스케일링 옵션 없음, 200×80dp
+  가이드 박스만 언급). 그 직후 react-native-bootsplash 자체의 RNBootSplashView가
+  덮어씌워지는데 이건 app/src/main/res/drawable/compat_splash_screen.xml(정상
+  비율로 고쳐둔 버전)을 쓰기 때문에, OS가 그린 큰 슬로건 → 라이브러리가 그린
+  정상 크기 슬로건으로 뷰가 바뀌는 순간 "커졌다가 작아지는" 것처럼 보였다.
+
+  windowSplashScreenBrandingImage를 아예 빼서 1단계(OS 렌더링)에서는 슬로건을
+  그리지 않게 하면, 로고만 먼저 보이다가 2단계(RNBootSplashView)에서 슬로건이
+  이미 올바른 크기로 나타난다 — 크기가 바뀌는 어색함 대신 슬로건이 살짝
+  늦게 나타나는 정도로 바뀐다.
+-->
+<resources>
+    <style name="Theme.BootSplash" parent="Theme.BootSplash.v30">
+        <item name="android:windowSplashScreenBackground">?bootSplashBackground</item>
+        <item name="android:windowSplashScreenAnimatedIcon">?bootSplashLogo</item>
+    </style>
+</resources>

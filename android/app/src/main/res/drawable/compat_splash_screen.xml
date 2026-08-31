@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  react-native-bootsplash 라이브러리가 기본 제공하는 동일 이름 리소스
+  (node_modules/react-native-bootsplash/android/.../res/drawable/compat_splash_screen.xml)를
+  앱 모듈에서 오버라이드한 파일. Android 리소스 병합 규칙상 앱 모듈 리소스가
+  라이브러리 리소스보다 우선한다.
+
+  라이브러리 기본값은 브랜드(슬로건) 이미지를 200dp × 80dp(가로:세로 2.5:1) 박스에
+  고정하는데, 실제 bootsplash_slogan.png는 724×109px(≈6.64:1)라 비율이 안 맞아
+  세로로 크게 늘어나 보이는 문제가 있었다. 아래는 실제 이미지 비율(≈6.59:1, 178:27)에
+  맞춰 늘어남 없이 보이도록 width/height만 수정한 버전 — background/logo 항목은
+  라이브러리 기본값과 동일하게 유지.
+
+  단, Android 12(API 31) 이상에서는 이 compat 드로어블이 아니라 OS 네이티브
+  SplashScreen API(android:windowSplashScreenBrandingImage)가 브랜드 이미지를
+  그리는데, 이 위치(화면 하단)는 OS가 강제하는 값이라 여기서 바꿀 수 없다
+  (공식 문서: https://developer.android.com/develop/ui/views/launch/splash-screen).
+  이 파일은 그 이전 버전(API 30 이하)에서 실제로 쓰이는 windowBackground용.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" android:opacity="opaque">
+    <item android:gravity="fill">
+        <color android:color="?attr/bootSplashBackground" />
+    </item>
+
+    <item
+        android:drawable="?bootSplashLogo"
+        android:gravity="center"
+        android:width="288dp"
+        android:height="288dp" />
+
+    <item
+        android:drawable="?bootSplashBrand"
+        android:gravity="bottom|center_horizontal"
+        android:width="178dp"
+        android:height="27dp"
+        android:bottom="60dp" />
+</layer-list>
