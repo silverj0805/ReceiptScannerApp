@@ -1,5 +1,6 @@
 package com.silverj0805.receiptscannerapp
 
+import android.os.Build
 import android.os.Bundle
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -17,6 +18,11 @@ class MainActivity : ReactActivity() {
     supportFragmentManager.fragmentFactory = RNScreensFragmentFactory()
     RNBootSplash.init(this, R.style.BootTheme)
     super.onCreate(savedInstanceState)
+    // Android 13+: 최근 앱(스위처) 썸네일만 비활성. FLAG_SECURE와 달리
+    // 앱 사용 중 스크린샷/녹화는 막지 않는다.
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      setRecentsScreenshotEnabled(false)
+    }
   }
 
   /**
