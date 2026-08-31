@@ -68,7 +68,7 @@ sequenceDiagram
 
 ## 아키텍처
 
-- **기능 단위(feature-based) 구조**: `scan`(촬영/인식), `receipt`(목록/상세/작성), `settings`로 화면·API·유틸을 도메인별로 분리했습니다.
+- **기능 단위(feature-based) 구조**: `scan`(촬영/인식), `confirm`(인식 결과 확인/수정·직접 기록), `receipt`(홈/목록/상세), `settings`로 화면·API·유틸을 도메인별로 분리했습니다.
 - **온디바이스 OCR 커스텀 TurboModule**: `specs/NativeReceiptScanner.ts`에 정의된 스펙을 기준으로, Android(Kotlin)는 ML Kit, iOS(Swift)는 Vision 프레임워크로 각각 구현해 하나의 JS 인터페이스(`scanText`)로 호출합니다.
 - **회원가입 없는 인증**: 로그인 절차 없이 기기 식별자(`X-Device-Id`)로 사용자를 구분하며, 모든 요청에 자동으로 실려 나갑니다.
 - **에러 모니터링**: 렌더링 중 잡히지 않은 에러와 API 실패를 화면·API 컨텍스트와 함께 Firebase Crashlytics로 기록합니다.
@@ -77,14 +77,17 @@ sequenceDiagram
 src/
 ├── app/            # 앱 진입점, 내비게이션 구조
 ├── features/
-│   ├── scan/       # 촬영, 온디바이스 OCR 결과 확인/수정
-│   ├── receipt/    # 목록, 상세, 요약, 직접 작성
+│   ├── scan/       # 카메라 촬영, 갤러리 선택
+│   ├── confirm/    # OCR 결과 확인/수정, 직접 기록
+│   ├── receipt/    # 홈, 목록, 상세, 월별 요약
 │   └── settings/   # 설정, 라이선스, 약관 WebView
 ├── shared/         # API 클라이언트, 공통 컴포넌트, Firebase, 전역 스토어
+├── assets/         # 앱 로고 등 정적 리소스
 └── mocks/          # MSW 기반 API 목(mock)
 
 specs/              # 커스텀 TurboModule 스펙 (NativeReceiptScanner)
 legal/              # 개인정보처리방침·이용약관 정적 페이지 (GitHub Pages로 서빙)
+docs/               # README 데모 스크린샷
 ```
 
 ## AI 에이전트 활용

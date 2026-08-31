@@ -13,6 +13,10 @@ module.exports = {
         alwaysTryTypes: true,
         project: path.resolve(__dirname, 'tsconfig.json'),
       },
+      // 에디터 ESLint가 typescript resolver를 못 쓸 때 .ts/.tsx 상대경로를 찾도록.
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+      },
     },
     // 별칭(@/, @specs/)은 resolver 성공 여부와 무관하게 internal로 분류.
     'import/internal-regex': '^@(?:/|specs/)',

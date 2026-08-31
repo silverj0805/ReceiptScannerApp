@@ -1,7 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import ReceiptDetailScreen from '@/features/receipt/screens/ReceiptDetailScreen';
 import ConfirmScreen from '@/features/confirm/screens/ConfirmScreen';
+import ReceiptDetailScreen from '@/features/receipt/screens/ReceiptDetailScreen';
 import LicenseScreen from '@/features/settings/screens/license';
 import WebViewScreen from '@/features/settings/screens/policy/WebViewScreen';
 import SettingsScreen from '@/features/settings/screens/settings';

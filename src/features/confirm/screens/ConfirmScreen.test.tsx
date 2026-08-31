@@ -1,4 +1,4 @@
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   fireEvent,
@@ -15,17 +15,18 @@ import NativeReceiptScanner from '@specs/NativeReceiptScanner';
 
 import ConfirmScreen from './ConfirmScreen.tsx';
 
-// ConfirmScreen이 navigation prop이 아니라 useNavigation()/useRoute() 훅을 직접 쓰므로
-// (ScanScreen과 동일한 이유로) 훅 자체를 목 처리한다.
 const mockGoBack = jest.fn();
 const mockNavigate = jest.fn();
+const mockNavigation = {
+  navigate: mockNavigate,
+  goBack: mockGoBack,
+} as never;
+
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
-  useNavigation: jest.fn(),
   useRoute: jest.fn(),
 }));
 
-// 실제 axios 호출이 나가면 안 되니 저장/수정 API 자체를 목 처리.
 jest.mock('@/features/receipt/api', () => ({
   ...jest.requireActual('@/features/receipt/api'),
   receiptRepository: {
@@ -34,7 +35,6 @@ jest.mock('@/features/receipt/api', () => ({
   },
 }));
 
-const mockedUseNavigation = useNavigation as jest.Mock;
 const mockedUseRoute = useRoute as jest.Mock;
 const mockedScanText = NativeReceiptScanner.scanText as jest.Mock;
 const mockedPostReceipt = receiptRepository.postReceipt as jest.Mock;
@@ -68,17 +68,13 @@ const renderConfirmScreen = () => {
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <ConfirmScreen />
+      <ConfirmScreen navigation={mockNavigation} />
     </QueryClientProvider>,
   );
 };
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockedUseNavigation.mockReturnValue({
-    goBack: mockGoBack,
-    navigate: mockNavigate,
-  });
   mockedUseRoute.mockReturnValue({
     params: { imageUri: 'file:///tmp/photo.jpg' },
   });
@@ -549,7 +545,7 @@ describe('수정 모드 (route.params.info가 있을 때)', () => {
 
     await render(
       <QueryClientProvider client={queryClient}>
-        <ConfirmScreen />
+        <ConfirmScreen navigation={mockNavigation} />
       </QueryClientProvider>,
     );
     await waitFor(() => {
