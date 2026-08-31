@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react-native';
 import { AppState, Text } from 'react-native';
 
-import PrivacyScreenCover from './PrivacyScreenCover';
+import PrivacyScreenCover from './index.tsx';
 
 // AppState.addEventListener를 spy로 가로채서, 실제 OS 이벤트 없이도 리스너를
 // 직접 호출해 상태 전환('active' -> 'background' 등)을 시뮬레이션한다.

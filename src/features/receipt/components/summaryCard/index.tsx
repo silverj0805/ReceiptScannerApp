@@ -1,7 +1,7 @@
 import { Text, View } from 'react-native';
 
 import type { CategorySummary } from '@/features/receipt/api/types/summary';
-import { Box } from '@/shared/components/ui/Box';
+import { Box } from '@/shared/components/Box';
 import { getCategoryInfo } from '@/shared/utils/category';
 
 export interface SummaryCardProps {

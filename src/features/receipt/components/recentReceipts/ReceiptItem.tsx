@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { Pressable, Text, View } from 'react-native';
 
 import { CategoryId } from '@/features/receipt/api/types/category';
-import { Box } from '@/shared/components/ui/Box';
+import { Box } from '@/shared/components/Box';
 import { getCategoryInfo } from '@/shared/utils/category';
 
 interface ReceiptItemProps {

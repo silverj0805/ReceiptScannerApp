@@ -6,7 +6,7 @@ import HomeScreen from '@/features/receipt/screens/home';
 import ReceiptListScreen from '@/features/receipt/screens/ReceiptListScreen';
 import WriteRedirectScreen from '@/features/receipt/screens/WriteRedirectScreen';
 import ScanScreen from '@/features/scan/screens/ScanScreen';
-import SettingsRedirectScreen from '@/features/settings/screens/SettingsRedirectScreen';
+import SettingsRedirectScreen from '@/features/settings/screens/settings/SettingsRedirectScreen';
 
 import ScanTabButton from './tabBars/ScanTabButton';
 import SettingsTabButton from './tabBars/SettingsTabButton';

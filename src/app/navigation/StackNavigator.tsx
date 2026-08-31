@@ -1,10 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import ReceiptDetailScreen from '@/features/receipt/screens/ReceiptDetailScreen';
-import ConfirmScreen from '@/features/scan/screens/ConfirmScreen';
-import LicenseScreen from '@/features/settings/screens/LicenseScreen';
-import SettingsScreen from '@/features/settings/screens/SettingsScreen';
-import WebViewScreen from '@/features/settings/screens/WebViewScreen';
+import ConfirmScreen from '@/features/confirm/screens/ConfirmScreen';
+import LicenseScreen from '@/features/settings/screens/license';
+import WebViewScreen from '@/features/settings/screens/policy/WebViewScreen';
+import SettingsScreen from '@/features/settings/screens/settings';
 
 import type { StackParamList } from './types';
 

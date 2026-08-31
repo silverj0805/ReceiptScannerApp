@@ -23,7 +23,7 @@ import { useCSSVariable } from 'uniwind';
 
 import type { RootStackParamList } from '@/app/navigation/types';
 import ReceiptItemSkeleton from '@/features/receipt/components/recentReceipts/ReceiptItemSkeleton';
-import Icon from '@/shared/components/ui/Icon';
+import Icon from '@/shared/components/Icon';
 import { CATEGORY_IDS, getCategoryInfo } from '@/shared/utils/category';
 
 import { receiptQueryFactory, receiptRepository } from '../api';

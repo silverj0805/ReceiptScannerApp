@@ -1,12 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { Linking } from 'react-native';
 
-import { licenseData } from '../constants/licenseData';
+import { licenseData } from '../../constants/licenseData';
 
-import LicenseScreen from './LicenseScreen';
+import LicenseScreen from './index.tsx';
 
-// LicenseScreen이 useNavigation() 훅이 아니라 navigation prop을 직접 받으므로
-// (HomeScreen.test.tsx와 동일한 패턴) 목 객체를 prop으로 바로 넘긴다.
 const mockGoBack = jest.fn();
 const mockNavigation = { goBack: mockGoBack } as never;
 
@@ -15,7 +13,6 @@ beforeEach(() => {
   jest.spyOn(Linking, 'openURL').mockResolvedValue();
 });
 
-// axios는 package.json dependencies에 항상 있고 repositoryUrl도 확실히 있어서 기준으로 씀.
 const axios = licenseData.find(item => item.packageName === 'axios')!;
 
 test('헤더 타이틀을 보여준다', async () => {

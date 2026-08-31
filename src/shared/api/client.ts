@@ -14,8 +14,11 @@ const client = axios.create({
   timeout: REQUEST_TIMEOUT_MS,
 });
 
-// 기기별 고유 ID(react-native-device-info의 getUniqueId)를 매 요청에 X-Device-Id 헤더로 실어 보냄.
-// 진짜 인증은 아니고(헤더 조작 가능), receiptsRouter의 미들웨어가 이 헤더 없으면 400을 줌.
+/**
+ * 기기별 고유 ID(react-native-device-info의 getUniqueId)를 매 요청에 X-Device-Id 헤더로 실어 보냄
+ * receiptsRouter의 미들웨어가 이 헤더 없으면 400을 줌
+ * 참고) 진짜 인증은 아니어서 헤더 조작 가능 위험 있음
+ */
 client.interceptors.request.use(async config => {
   const deviceId = await getUniqueId();
   config.headers['X-Device-Id'] = deviceId;

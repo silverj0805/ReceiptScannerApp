@@ -1,6 +1,6 @@
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
-import { Box } from '@/shared/components/ui/Box';
+import { Box } from '@/shared/components/Box';
 
 const SummarySkeleton = () => (
   <Box className="w-full gap-3.5" testID="home-loading">

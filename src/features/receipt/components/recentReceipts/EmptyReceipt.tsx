@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native';
 
-import Icon from '@/shared/components/ui/Icon';
+import Icon from '@/shared/components/Icon';
 
 const EmptyReceipt = () => {
   return (

@@ -1,7 +1,7 @@
 import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import { Pressable, View } from 'react-native';
 
-import Icon from '@/shared/components/ui/Icon';
+import Icon from '@/shared/components/Icon';
 
 function ScanTabButton(props: BottomTabBarButtonProps) {
   return (

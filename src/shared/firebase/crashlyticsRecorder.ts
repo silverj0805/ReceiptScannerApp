@@ -43,8 +43,9 @@ function safeStringify(value: unknown): string {
 }
 
 /**
- * 화면 전환 시 호출 — currentScreen 스토어 갱신 + Crashlytics current_screen
- * 속성/브레드크럼 로그 기록. NavigationContainer의 onStateChange에서 호출.
+ * 화면 전환 시 호출
+ * currentScreen 스토어 갱신 + Crashlytics current_screen 속성/브레드크럼 로그 기록
+ * NavigationContainer의 onStateChange에서 호출
  */
 export function setScreenForTracking(screenName: string): void {
   useCurrentScreenStore.getState().setCurrentScreen(screenName);
@@ -110,9 +111,8 @@ export async function recordErrorWithContext(
 }
 
 /**
- * API 에러 전용 기록(AxiosError 등). 아직 이 프로젝트에 axios 클라이언트가
- * 없어서 실제로 연결하는 곳은 없지만, API 클라이언트를 붙이는 태스크에서
- * response interceptor 하나로 바로 연결할 수 있도록 미리 준비해둠.
+ * API 에러 전용 기록(AxiosError 등)
+ * API 클라이언트를 붙이는 태스크에서response interceptor 하나로 바로 연결
  */
 export function recordApiError(
   err: unknown,

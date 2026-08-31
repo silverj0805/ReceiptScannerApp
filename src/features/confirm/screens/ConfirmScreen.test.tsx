@@ -13,7 +13,7 @@ import { receiptQueryFactory, receiptRepository } from '@/features/receipt/api';
 import type { Receipt } from '@/features/receipt/api/types/receipt';
 import NativeReceiptScanner from '@specs/NativeReceiptScanner';
 
-import ConfirmScreen from './ConfirmScreen';
+import ConfirmScreen from './ConfirmScreen.tsx';
 
 // ConfirmScreen이 navigation prop이 아니라 useNavigation()/useRoute() 훅을 직접 쓰므로
 // (ScanScreen과 동일한 이유로) 훅 자체를 목 처리한다.

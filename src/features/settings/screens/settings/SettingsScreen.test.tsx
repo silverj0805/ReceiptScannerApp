@@ -2,11 +2,10 @@ import { useNavigation } from '@react-navigation/native';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { getVersion } from 'react-native-device-info';
 
-import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../constants/urls';
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/urls';
 
-import SettingsScreen from './SettingsScreen';
+import SettingsScreen from './index.tsx';
 
-// ConfirmScreen.test.tsx와 동일한 이유로 useNavigation 훅을 목 처리.
 const mockGoBack = jest.fn();
 const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({

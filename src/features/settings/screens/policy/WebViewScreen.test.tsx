@@ -1,11 +1,13 @@
 import { useRoute } from '@react-navigation/native';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
 
 import WebViewScreen from './WebViewScreen';
 
-// WebViewScreen이 useNavigation() 훅이 아니라 navigation prop을 직접 받으므로
-// (LicenseScreen.test.tsx와 동일한 패턴) 목 객체를 prop으로 바로 넘긴다.
-// route.params는 여전히 useRoute() 훅으로 받으므로 그것만 목 처리.
 const mockGoBack = jest.fn();
 const mockNavigation = { goBack: mockGoBack } as never;
 jest.mock('@react-navigation/native', () => ({

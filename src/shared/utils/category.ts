@@ -26,10 +26,6 @@ const CATEGORY_MAP = Object.fromEntries(
 
 const FALLBACK = CATEGORY_MAP.etc;
 
-/**
- * 카테고리 id로 한글 라벨 + 태그 색상(bg/color)을 한 번에 가져옴.
- * 알 수 없는 값이 오면 '기타'로 폴백.
- */
 export function getCategoryInfo(id: string): CategoryInfo {
   return CATEGORY_MAP[id as CategoryId] ?? FALLBACK;
 }

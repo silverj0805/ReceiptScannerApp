@@ -20,7 +20,7 @@ import { useCSSVariable } from 'uniwind';
 
 import type { StackParamList } from '@/app/navigation/types';
 import { receiptQueryFactory, receiptRepository } from '@/features/receipt/api';
-import Icon from '@/shared/components/ui/Icon';
+import Icon from '@/shared/components/Icon';
 import { getCategoryInfo } from '@/shared/utils/category';
 
 function ReceiptDetailScreen() {

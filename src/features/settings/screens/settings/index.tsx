@@ -4,12 +4,9 @@ import { getVersion } from 'react-native-device-info';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { StackParamList } from '@/app/navigation/types';
-import Icon from '@/shared/components/ui/Icon';
+import Icon from '@/shared/components/Icon';
 
-import {
-  PRIVACY_POLICY_URL,
-  TERMS_OF_SERVICE_URL,
-} from '../constants/urls';
+import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/urls';
 
 function SettingsScreen({
   navigation,

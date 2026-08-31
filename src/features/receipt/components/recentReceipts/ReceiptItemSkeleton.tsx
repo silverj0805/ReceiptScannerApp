@@ -1,6 +1,6 @@
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
-import { Box } from '@/shared/components/ui/Box';
+import { Box } from '@/shared/components/Box';
 
 const ReceiptItemSkeleton = () => (
   <Box className="flex-row items-center justify-between">

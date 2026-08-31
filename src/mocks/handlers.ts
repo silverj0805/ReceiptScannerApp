@@ -17,8 +17,7 @@ const summaryFixture: ReceiptSummary = {
   ],
 };
 
-// GET /receipts — "최근 영수증" 리스트용. 최신순(날짜 내림차순)으로 이미 정렬된
-// 상태로 내려온다고 가정.
+// GET /receipts — "최근 영수증" 리스트용. 최신순(날짜 내림차순)으로 이미 정렬된 상태로 내려온다고 가정.
 const recentReceiptsFixture: Receipt[] = [
   {
     id: 1,

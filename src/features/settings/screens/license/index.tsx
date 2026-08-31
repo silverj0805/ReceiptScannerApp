@@ -3,9 +3,9 @@ import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { StackParamList } from '@/app/navigation/types';
-import Icon from '@/shared/components/ui/Icon';
+import Icon from '@/shared/components/Icon';
 
-import { licenseData } from '../constants/licenseData';
+import { licenseData } from '../../constants/licenseData';
 
 function LicenseScreen({
   navigation,

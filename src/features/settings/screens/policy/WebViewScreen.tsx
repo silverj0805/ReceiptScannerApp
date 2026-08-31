@@ -13,10 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
 import type { StackParamList } from '@/app/navigation/types';
-import Icon from '@/shared/components/ui/Icon';
+import Icon from '@/shared/components/Icon';
 
-// 개인정보처리방침/이용약관처럼 외부(노션 등)에 발행한 페이지를 보여줄 때 재사용하는 범용 WebView 화면
-// route.params.url이 아직 없으면(빈 문자열) 페이지를 열지 않고 "준비 중" 안내만 보여준다
+/**
+ * 개인정보처리방침/이용약관처럼 외부(노션 등)에 발행한 페이지를 보여줄 때 재사용하는 범용 WebView 화면
+ */
 function WebViewScreen({
   navigation,
 }: {

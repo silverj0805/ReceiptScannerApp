@@ -32,7 +32,7 @@ import type {
 import { receiptQueryFactory, receiptRepository } from '@/features/receipt/api';
 import type { CategoryId } from '@/features/receipt/api/types/category';
 import type { CreateReceiptPayload } from '@/features/receipt/api/types/receipt';
-import Icon from '@/shared/components/ui/Icon';
+import Icon from '@/shared/components/Icon';
 import { getCategoryInfo } from '@/shared/utils/category';
 import NativeReceiptScanner from '@specs/NativeReceiptScanner';
 
