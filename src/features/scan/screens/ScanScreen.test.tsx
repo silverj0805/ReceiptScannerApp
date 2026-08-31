@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -71,6 +72,9 @@ beforeEach(() => {
   });
   mockSaveToTemporaryFileAsync.mockResolvedValue('file:///tmp/photo.jpg');
   jest.spyOn(Linking, 'openSettings').mockResolvedValue();
+  // 실제 vision-camera의 requestPermission()은 Promise<boolean>을 반환한다
+  // (usePermission 훅이 .catch()로 rejection을 처리하므로 기본값이 필요).
+  mockRequestPermission.mockResolvedValue(true);
 });
 
 test('카메라 권한이 아직 결정되지 않았으면 마운트 시 권한을 요청한다', async () => {
@@ -83,6 +87,32 @@ test('카메라 권한이 아직 결정되지 않았으면 마운트 시 권한�
   });
   expect(screen.queryByText('카메라 접근 권한이 필요해요')).toBeNull();
   expect(screen.queryByTestId('camera-preview')).toBeNull();
+});
+
+test('권한 요청이 "No Activity!" 같은 일시적 네이티브 에러로 실패해도 크래시 없이 넘어가고, 잠시 후 재시도한다', async () => {
+  jest.useFakeTimers();
+  setPermission({ hasPermission: false, canRequestPermission: true });
+  mockRequestPermission.mockRejectedValueOnce(new Error('No Activity!'));
+  mockRequestPermission.mockResolvedValueOnce(true);
+
+  await render(<ScanScreen navigation={mockNavigation} />);
+
+  await waitFor(() => {
+    expect(mockRequestPermission).toHaveBeenCalledTimes(1);
+  });
+
+  // 재시도 지연(500ms) 전에는 아직 다시 호출되지 않는다.
+  expect(mockRequestPermission).toHaveBeenCalledTimes(1);
+
+  await act(async () => {
+    jest.advanceTimersByTime(500);
+  });
+
+  await waitFor(() => {
+    expect(mockRequestPermission).toHaveBeenCalledTimes(2);
+  });
+
+  jest.useRealTimers();
 });
 
 test('카메라 권한이 거부됐으면 설정으로 이동 안내를 보여준다', async () => {
