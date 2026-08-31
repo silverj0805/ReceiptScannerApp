@@ -20,6 +20,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import RNFS from 'react-native-fs';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCSSVariable } from 'uniwind';
@@ -75,6 +76,19 @@ const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const toPickerDate = (value: string, today: Date) =>
   DATE_PATTERN.test(value) ? dayjs(value).toDate() : today;
 const formatPickerDate = (date: Date) => dayjs(date).format('YYYY-MM-DD');
+
+// 촬영/갤러리 선택 사진은 둘 다 앱 전용 캐시에 있는 "임시" 사본이다(ScanScreen의
+// 카메라 캡처, react-native-image-picker 공식 문서 둘 다 확인됨 — 갤러리 원본이
+// 아니라 복사본이라 지워도 사용자의 실제 사진엔 영향 없음). OCR이 다 읽고 나면
+// 더 필요 없는데 기기에 방치되는 게 보안 점검에서 지적됐던 부분이라, 인식이
+// 끝나면(성공/실패 무관) 삭제한다. RNFS.unlink는 file:// 스킴을 안 붙인 순수
+// 경로를 기대해서 있으면 떼어낸다.
+function deleteTempImage(uri: string) {
+  const path = uri.startsWith('file://') ? uri.slice('file://'.length) : uri;
+  // 실패해도(이미 없거나 접근 불가) 조용히 무시 — 이건 OS가 언젠가 정리해줄
+  // 캐시라 삭제 실패가 사용자 흐름을 막을 이유는 없다.
+  RNFS.unlink(path).catch(() => {});
+}
 
 function ConfirmScreen() {
   const backgroundColor = useCSSVariable('--color-background');
@@ -197,6 +211,9 @@ function ConfirmScreen() {
         // (예: 존재하지 않는 imageUri) — 처리 안 하면 unhandled rejection으로 앱이
         // 죽은 것처럼 보이므로, 빈 문자열로 취급해서 기존 "인식 실패" 화면으로 보냄.
         setRawText('');
+      })
+      .finally(() => {
+        deleteTempImage(imageUri);
       });
   }, [imageUri, isEditMode, reset]);
 

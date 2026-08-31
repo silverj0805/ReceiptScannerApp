@@ -2011,6 +2011,8 @@ PODS:
     - ReactNativeDependencies
     - RNFBApp
     - Yoga
+  - RNFS (2.20.0):
+    - React-Core
   - RNReanimated (4.6.0):
     - hermes-engine
     - RCTRequired
@@ -2358,6 +2360,7 @@ DEPENDENCIES:
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - "RNFBApp (from `../node_modules/@react-native-firebase/app`)"
   - "RNFBCrashlytics (from `../node_modules/@react-native-firebase/crashlytics`)"
+  - RNFS (from `../node_modules/react-native-fs`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
@@ -2579,6 +2582,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-firebase/app"
   RNFBCrashlytics:
     :path: "../node_modules/@react-native-firebase/crashlytics"
+  RNFS:
+    :path: "../node_modules/react-native-fs"
   RNReanimated:
     :path: "../node_modules/react-native-reanimated"
   RNScreens:
@@ -2704,6 +2709,7 @@ SPEC CHECKSUMS:
   RNDeviceInfo: 4c852998208b60dc192ae3529e5867817719ad1e
   RNFBApp: 7de406c728113fcc16c74a5b79a0dca70f68a01b
   RNFBCrashlytics: 49a57e1ebc8bc118881f44be5b3ecd95b5431992
+  RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
   RNReanimated: 861e9a575f93780ae7bb8ae714cc6e77a6bc86b7
   RNScreens: a2103f13fa603c405092daf70ca4eb3a6291fd6d
   RNWorklets: a140b8a8c63ab3f1ac247f5c6e8ae192bf70b0a0

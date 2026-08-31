@@ -7,6 +7,7 @@ import {
   waitFor,
 } from '@testing-library/react-native';
 import dayjs from 'dayjs';
+import RNFS from 'react-native-fs';
 
 import { receiptQueryFactory, receiptRepository } from '@/features/receipt/api';
 import type { Receipt } from '@/features/receipt/api/types/receipt';
@@ -38,6 +39,7 @@ const mockedUseRoute = useRoute as jest.Mock;
 const mockedScanText = NativeReceiptScanner.scanText as jest.Mock;
 const mockedPostReceipt = receiptRepository.postReceipt as jest.Mock;
 const mockedPatchReceipt = receiptRepository.patchReceipt as jest.Mock;
+const mockedUnlink = RNFS.unlink as jest.Mock;
 
 const RAW_TEXT_SUCCESS = [
   '점포명 : 스타벅스 강남점',
@@ -183,6 +185,28 @@ test('scanText가 실패(reject)해도 죽지 않고 인식 실패 화면을 보
 
   await waitFor(() => {
     expect(screen.getByText('텍스트를 인식하지 못했어요')).toBeTruthy();
+  });
+});
+
+test('인식이 끝나면(성공) 임시 사진 파일을 지운다', async () => {
+  mockedScanText.mockResolvedValue(RAW_TEXT_SUCCESS);
+
+  await renderConfirmScreen();
+
+  await waitFor(() => {
+    expect(screen.getByDisplayValue('스타벅스 강남점')).toBeTruthy();
+  });
+  // route.params.imageUri('file:///tmp/photo.jpg')에서 file:// 스킴을 뗀 경로로 호출.
+  expect(mockedUnlink).toHaveBeenCalledWith('/tmp/photo.jpg');
+});
+
+test('인식이 실패해도(reject) 임시 사진 파일은 지운다', async () => {
+  mockedScanText.mockRejectedValue(new Error('SCAN_ERROR'));
+
+  await renderConfirmScreen();
+
+  await waitFor(() => {
+    expect(mockedUnlink).toHaveBeenCalledWith('/tmp/photo.jpg');
   });
 });
 
