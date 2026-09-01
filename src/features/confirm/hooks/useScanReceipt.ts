@@ -5,7 +5,7 @@ import NativeReceiptScanner from '@specs/NativeReceiptScanner';
 
 import type { ConfirmFormValues } from '../types';
 import { deleteTempImage } from '../utils/deleteTempImage';
-import { parseReceiptText } from '../utils/parseReceiptText';
+import { parseReceiptText } from '../utils/extractReceiptInfo/parseReceiptText';
 
 function useScanReceipt({
   imageUri,
@@ -30,7 +30,7 @@ function useScanReceipt({
         const parsed = parseReceiptText(text);
         reset({
           merchant: parsed.merchant ?? '',
-          itemName: '',
+          itemName: parsed.itemName ?? '',
           amount: parsed.amount != null ? String(parsed.amount) : '',
           date: parsed.date ?? '',
           category: '',
