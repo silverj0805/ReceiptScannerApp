@@ -1,6 +1,6 @@
-import type { Receipt } from '../api/types/receipt';
+import type { Receipt } from '../../api/types/receipt.ts';
 
-import { groupReceiptsByDate } from './groupByDate';
+import { groupReceiptsByDate } from '.';
 
 const receipt = (overrides: Partial<Receipt>): Receipt => ({
   id: 1,

@@ -19,8 +19,6 @@ export interface CreateReceiptPayload {
   date: string; // YYYY-MM-DD
 }
 
-// date/createdAt은 서버가 전체 ISO datetime으로 내려줌
-// (요청 바디의 date는 YYYY-MM-DD만 보내면 됨 — 서버가 자정 timestamp로 채워서 돌려줌).
 export interface CreateReceiptResponse {
   id: number;
   deviceId: string;
@@ -29,6 +27,6 @@ export interface CreateReceiptResponse {
   amount: number;
   category: CategoryId;
   rawText?: string;
-  date: string;
-  createdAt: string;
+  date: string; // ISO datetime
+  createdAt: string; // ISO datetime
 }

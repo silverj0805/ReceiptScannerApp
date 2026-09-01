@@ -1,7 +1,12 @@
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react-native';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import { http, HttpResponse } from 'msw';
@@ -9,17 +14,19 @@ import { http, HttpResponse } from 'msw';
 import type { Receipt } from '@/features/receipt/api/types/receipt';
 import { server } from '@/mocks/server';
 
-import ReceiptListScreen from './ReceiptListScreen';
+import ReceiptListScreen from '.';
 
-// ConfirmScreen.test.tsx와 동일한 이유로 useNavigation 훅만 목 처리(상세 이동 검증용).
 const mockNavigate = jest.fn();
-jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
-  useNavigation: jest.fn(),
-}));
-const mockedUseNavigation = useNavigation as jest.Mock;
+const mockNavigation = {
+  navigate: mockNavigate,
+} as never;
 
 const Stack = createNativeStackNavigator();
+
+function ReceiptListRoute() {
+  return <ReceiptListScreen navigation={mockNavigation} />;
+}
+
 const renderReceiptListScreen = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -28,7 +35,7 @@ const renderReceiptListScreen = () => {
     <QueryClientProvider client={queryClient}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="ReceiptList" component={ReceiptListScreen} />
+          <Stack.Screen name="ReceiptList" component={ReceiptListRoute} />
         </Stack.Navigator>
       </NavigationContainer>
     </QueryClientProvider>,
@@ -41,12 +48,48 @@ const THIS_MONTH = dayjs().format('YYYY-MM');
 const LAST_MONTH = dayjs().subtract(1, 'month').format('YYYY-MM');
 
 const FIXTURE: Receipt[] = [
-  { id: 1, merchant: '스타벅스 강남점', category: 'food', date: `${THIS_MONTH}-20`, amount: 12400 },
-  { id: 2, merchant: '올리브영', category: 'shop', date: `${THIS_MONTH}-19`, amount: 34200 },
-  { id: 3, merchant: 'GS25 역삼점', category: 'etc', date: `${THIS_MONTH}-19`, amount: 6800 },
-  { id: 4, merchant: '카카오T', category: 'transit', date: `${THIS_MONTH}-18`, amount: 9200 },
-  { id: 5, merchant: '삼성약국', category: 'health', date: `${THIS_MONTH}-17`, amount: 15000 },
-  { id: 6, merchant: 'CGV 강남', category: 'culture', date: `${LAST_MONTH}-25`, amount: 14500 },
+  {
+    id: 1,
+    merchant: '스타벅스 강남점',
+    category: 'food',
+    date: `${THIS_MONTH}-20`,
+    amount: 12400,
+  },
+  {
+    id: 2,
+    merchant: '올리브영',
+    category: 'shop',
+    date: `${THIS_MONTH}-19`,
+    amount: 34200,
+  },
+  {
+    id: 3,
+    merchant: 'GS25 역삼점',
+    category: 'etc',
+    date: `${THIS_MONTH}-19`,
+    amount: 6800,
+  },
+  {
+    id: 4,
+    merchant: '카카오T',
+    category: 'transit',
+    date: `${THIS_MONTH}-18`,
+    amount: 9200,
+  },
+  {
+    id: 5,
+    merchant: '삼성약국',
+    category: 'health',
+    date: `${THIS_MONTH}-17`,
+    amount: 15000,
+  },
+  {
+    id: 6,
+    merchant: 'CGV 강남',
+    category: 'culture',
+    date: `${LAST_MONTH}-25`,
+    amount: 14500,
+  },
 ];
 
 const mockReceiptsEndpoint = (fixture: Receipt[] = FIXTURE) => {
@@ -71,7 +114,6 @@ const mockReceiptsEndpoint = (fixture: Receipt[] = FIXTURE) => {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockedUseNavigation.mockReturnValue({ navigate: mockNavigate });
   mockReceiptsEndpoint();
 });
 
@@ -80,7 +122,9 @@ test('데이터 도착 전엔 스켈레톤을 보여주고, 필터 UI는 그대�
 
   // HomeScreen과 동일한 패턴: 전체 화면을 스피너로 덮지 않고 목록 자리만
   // 스켈레톤으로 보여줘서, 로딩 중에도 기간/카테고리 필터는 바로 조작할 수 있다.
-  expect(screen.getAllByTestId('receipt-list-skeleton').length).toBeGreaterThan(0);
+  expect(screen.getAllByTestId('receipt-list-skeleton').length).toBeGreaterThan(
+    0,
+  );
   expect(screen.getByTestId('period-month')).toBeTruthy();
 
   await waitFor(() => {
@@ -95,12 +139,20 @@ test('기본값은 기간 "이번 달" + 카테고리 "전체"이고, 날짜별�
     expect(screen.getByText('스타벅스 강남점')).toBeTruthy();
   });
 
-  expect(screen.getByTestId('period-month').props.accessibilityState).toMatchObject({ selected: true });
-  expect(screen.getByTestId('period-last').props.accessibilityState).toMatchObject({ selected: false });
-  expect(screen.getByTestId('category-filter-all').props.accessibilityState).toMatchObject({ selected: true });
+  expect(
+    screen.getByTestId('period-month').props.accessibilityState,
+  ).toMatchObject({ selected: true });
+  expect(
+    screen.getByTestId('period-last').props.accessibilityState,
+  ).toMatchObject({ selected: false });
+  expect(
+    screen.getByTestId('category-filter-all').props.accessibilityState,
+  ).toMatchObject({ selected: true });
 
   // 8/19 그룹(올리브영+GS25)이 하나로 묶여서 그룹 헤더에 합계가 표시된다.
-  const groupLabel = dayjs(`${THIS_MONTH}-19`).locale('ko').format('M월 D일 dddd');
+  const groupLabel = dayjs(`${THIS_MONTH}-19`)
+    .locale('ko')
+    .format('M월 D일 dddd');
   expect(screen.getByText(groupLabel)).toBeTruthy();
   expect(screen.getByText('₩41,000')).toBeTruthy();
   expect(screen.getByText('올리브영')).toBeTruthy();
@@ -122,15 +174,31 @@ test('"지난 달"을 누르면 지난 달 데이터만 보여준다', async () 
     expect(screen.getByText('CGV 강남')).toBeTruthy();
   });
   expect(screen.queryByText('스타벅스 강남점')).toBeNull();
-  expect(screen.getByTestId('period-last').props.accessibilityState).toMatchObject({ selected: true });
-  expect(screen.getByTestId('period-month').props.accessibilityState).toMatchObject({ selected: false });
+  expect(
+    screen.getByTestId('period-last').props.accessibilityState,
+  ).toMatchObject({ selected: true });
+  expect(
+    screen.getByTestId('period-month').props.accessibilityState,
+  ).toMatchObject({ selected: false });
 });
 
 test('"전체" 기간을 누르면 이번 달/지난 달 모두 보여준다', async () => {
   // 페이지네이션과 얽히지 않게 PAGE_SIZE(4)보다 적은 픽스처로 이 테스트만 override.
   mockReceiptsEndpoint([
-    { id: 1, merchant: '스타벅스 강남점', category: 'food', date: `${THIS_MONTH}-20`, amount: 12400 },
-    { id: 6, merchant: 'CGV 강남', category: 'culture', date: `${LAST_MONTH}-25`, amount: 14500 },
+    {
+      id: 1,
+      merchant: '스타벅스 강남점',
+      category: 'food',
+      date: `${THIS_MONTH}-20`,
+      amount: 12400,
+    },
+    {
+      id: 6,
+      merchant: 'CGV 강남',
+      category: 'culture',
+      date: `${LAST_MONTH}-25`,
+      amount: 14500,
+    },
   ]);
 
   await renderReceiptListScreen();
@@ -159,8 +227,12 @@ test('카테고리 하나를 고르면 "전체"는 해제되고 해당 카테고
     expect(screen.queryByText('올리브영')).toBeNull();
   });
   expect(screen.getByText('스타벅스 강남점')).toBeTruthy();
-  expect(screen.getByTestId('category-filter-food').props.accessibilityState).toMatchObject({ selected: true });
-  expect(screen.getByTestId('category-filter-all').props.accessibilityState).toMatchObject({ selected: false });
+  expect(
+    screen.getByTestId('category-filter-food').props.accessibilityState,
+  ).toMatchObject({ selected: true });
+  expect(
+    screen.getByTestId('category-filter-all').props.accessibilityState,
+  ).toMatchObject({ selected: false });
 });
 
 test('카테고리를 여러 개 고르면 다중 선택으로 필터링한다', async () => {
@@ -197,8 +269,12 @@ test('선택된 카테고리를 전부 해제하면 다시 "전체"로 돌아간
   await waitFor(() => {
     expect(screen.getByText('올리브영')).toBeTruthy();
   });
-  expect(screen.getByTestId('category-filter-all').props.accessibilityState).toMatchObject({ selected: true });
-  expect(screen.getByTestId('category-filter-food').props.accessibilityState).toMatchObject({ selected: false });
+  expect(
+    screen.getByTestId('category-filter-all').props.accessibilityState,
+  ).toMatchObject({ selected: true });
+  expect(
+    screen.getByTestId('category-filter-food').props.accessibilityState,
+  ).toMatchObject({ selected: false });
 });
 
 test('"전체" 칩을 누르면 선택돼있던 카테고리들이 모두 해제된다', async () => {
@@ -218,9 +294,15 @@ test('"전체" 칩을 누르면 선택돼있던 카테고리들이 모두 해제
   await waitFor(() => {
     expect(screen.getByText('올리브영')).toBeTruthy();
   });
-  expect(screen.getByTestId('category-filter-all').props.accessibilityState).toMatchObject({ selected: true });
-  expect(screen.getByTestId('category-filter-food').props.accessibilityState).toMatchObject({ selected: false });
-  expect(screen.getByTestId('category-filter-transit').props.accessibilityState).toMatchObject({ selected: false });
+  expect(
+    screen.getByTestId('category-filter-all').props.accessibilityState,
+  ).toMatchObject({ selected: true });
+  expect(
+    screen.getByTestId('category-filter-food').props.accessibilityState,
+  ).toMatchObject({ selected: false });
+  expect(
+    screen.getByTestId('category-filter-transit').props.accessibilityState,
+  ).toMatchObject({ selected: false });
 });
 
 test('필터 결과가 없으면 안내 문구를 보여준다', async () => {

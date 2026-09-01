@@ -1,51 +1,40 @@
 import dayjs from 'dayjs';
 import { Pressable, Text, View } from 'react-native';
 
-import { CategoryId } from '@/features/receipt/api/types/category';
+import type { Receipt } from '@/features/receipt/api/types/receipt';
 import { Box } from '@/shared/components/Box';
 import { getCategoryInfo } from '@/shared/utils/category';
 
 interface ReceiptItemProps {
-  title: string;
-  category: CategoryId;
-  date: string;
-  amount: number;
-  onPress?: () => void;
+  item: Receipt;
+  onPress: (id: number) => void;
   testID?: string;
 }
 
-const ReceiptItem = ({
-  title,
-  category,
-  date,
-  amount,
-  onPress,
-  testID,
-}: ReceiptItemProps) => {
+const ReceiptItem = ({ item, onPress, testID }: ReceiptItemProps) => {
+  const info = getCategoryInfo(item.category);
+
   return (
-    <Pressable testID={testID} onPress={onPress}>
+    <Pressable testID={testID} onPress={() => onPress(item.id)}>
       <Box className="flex-row items-center justify-between">
         <View className="gap-2">
-          <Text className="text-lg font-bold">{title}</Text>
+          <Text className="text-lg font-bold">{item.merchant}</Text>
           <View className="flex-row items-center gap-1">
             <View
               className="py-0.5 px-2 rounded-lg"
-              style={{ backgroundColor: getCategoryInfo(category).bg }}
+              style={{ backgroundColor: info.bg }}
             >
-              <Text
-                className="text-xs font-bold"
-                style={{ color: getCategoryInfo(category).color }}
-              >
-                {getCategoryInfo(category).label}
+              <Text className="text-xs font-bold" style={{ color: info.color }}>
+                {info.label}
               </Text>
             </View>
             <Text className="text-sm text-gray">
-              {dayjs(date).format('M월 D일')}
+              {dayjs(item.date).format('M월 D일')}
             </Text>
           </View>
         </View>
         <Text className="text-lg font-bold">
-          ₩{amount.toLocaleString('ko-KR')}
+          ₩{item.amount.toLocaleString('ko-KR')}
         </Text>
       </Box>
     </Pressable>

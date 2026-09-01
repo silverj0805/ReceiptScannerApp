@@ -1,4 +1,4 @@
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -15,22 +15,22 @@ import { server } from '@/mocks/server';
 
 import HomeScreen from './index';
 
-// HomeScreen이 (탭 navigation prop과 별개로) 루트 스택 이동을 위해 useNavigation()도
-// 쓰기 때문에(Detail로 가려고) 훅만 목 처리 — prop 기반 navigation은 실제 네비게이터가
-// 그대로 주입해줌(ConfirmScreen.test.tsx와 동일한 패턴).
 const mockNavigate = jest.fn();
-jest.mock('@react-navigation/native', () => ({
-  ...jest.requireActual('@react-navigation/native'),
-  useNavigation: jest.fn(),
-}));
-const mockedUseNavigation = useNavigation as jest.Mock;
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockedUseNavigation.mockReturnValue({ navigate: mockNavigate });
 });
 
+const mockNavigation = {
+  navigate: mockNavigate,
+} as never;
+
 const Stack = createNativeStackNavigator();
+
+function HomeRoute() {
+  return <HomeScreen navigation={mockNavigation} />;
+}
+
 const renderHomeScreen = () => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -39,7 +39,7 @@ const renderHomeScreen = () => {
     <QueryClientProvider client={queryClient}>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Home" component={HomeRoute} />
         </Stack.Navigator>
       </NavigationContainer>
     </QueryClientProvider>,

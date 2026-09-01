@@ -1,24 +1,18 @@
-import type { CategoryId } from '../api/types/category';
+import type { CategoryId } from '../../api/types/category.ts';
 
-import { categoriesToParam, periodToMonthParam } from './receiptFilters';
+import { categoriesToParam, periodToMonthParam } from '.';
 
 describe('periodToMonthParam', () => {
   test('month(이번 달)은 today의 YYYY-MM을 반환한다', () => {
-    expect(periodToMonthParam('month', new Date('2026-08-30'))).toBe(
-      '2026-08',
-    );
+    expect(periodToMonthParam('month', new Date('2026-08-30'))).toBe('2026-08');
   });
 
   test('last(지난 달)은 today의 전월 YYYY-MM을 반환한다', () => {
-    expect(periodToMonthParam('last', new Date('2026-08-30'))).toBe(
-      '2026-07',
-    );
+    expect(periodToMonthParam('last', new Date('2026-08-30'))).toBe('2026-07');
   });
 
   test('last는 연도 경계(1월 -> 작년 12월)도 올바르게 넘어간다', () => {
-    expect(periodToMonthParam('last', new Date('2026-01-15'))).toBe(
-      '2025-12',
-    );
+    expect(periodToMonthParam('last', new Date('2026-01-15'))).toBe('2025-12');
   });
 
   test('all(전체)은 undefined를 반환한다(필터 생략)', () => {

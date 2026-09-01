@@ -19,27 +19,27 @@ function SummaryCard({
 }: SummaryCardProps) {
   return (
     <Box className="w-full gap-3.5">
-      <View className="gap-1.5">
+      <View className="gap-2">
         <Text className="font-bold text-gray">이번 달 지출 💸</Text>
-        <View className="flex-row items-baseline gap-2 flex-wrap">
-          <Text className="text-[32px] font-extrabold tracking-[-0.5px] text-black tabular-nums">
-            ₩{total.toLocaleString('ko-KR')}
+
+        <Text className="text-[32px] font-extrabold tracking-[-0.5px] text-black tabular-nums">
+          ₩{total.toLocaleString('ko-KR')}
+        </Text>
+
+        {deltaPercent !== 0 && (
+          <Text className={`font-medium`}>
+            지난 달 대비{' '}
+            <Text
+              className={`font-bold ${
+                deltaPercent < 0 ? 'text-primary' : 'text-[#dc2626]'
+              }`}
+            >
+              {deltaAmount.toLocaleString('ko-KR')}원{' '}
+              {deltaPercent > 0 ? '더' : '덜'}
+            </Text>{' '}
+            쓰고 있어요.
           </Text>
-          {deltaPercent !== 0 && (
-            <Text className={`font-medium`}>
-              지난 달 대비{' '}
-              <Text
-                className={`font-bold ${
-                  deltaPercent < 0 ? 'text-primary' : 'text-[#dc2626]'
-                }`}
-              >
-                {deltaAmount.toLocaleString('ko-KR')}원{' '}
-                {deltaPercent > 0 ? '더' : '덜'}
-              </Text>{' '}
-              쓰고 있어요.
-            </Text>
-          )}
-        </View>
+        )}
       </View>
 
       {byCategory.length > 0 && (

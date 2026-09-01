@@ -1,4 +1,4 @@
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   act,
@@ -13,27 +13,32 @@ import { Alert } from 'react-native';
 import type { Receipt } from '@/features/receipt/api/types/receipt';
 import { server } from '@/mocks/server';
 
-import ReceiptDetailScreen from './ReceiptDetailScreen';
+import ReceiptDetailScreen from '.';
 
-// ConfirmScreen.test.tsx와 동일한 이유로 useNavigation/useRoute 훅을 목 처리.
 const mockGoBack = jest.fn();
 const mockNavigate = jest.fn();
+const mockNavigation = {
+  navigate: mockNavigate,
+  goBack: mockGoBack,
+} as never;
+
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
-  useNavigation: jest.fn(),
   useRoute: jest.fn(),
 }));
-const mockedUseNavigation = useNavigation as jest.Mock;
 const mockedUseRoute = useRoute as jest.Mock;
 
-// 실제 Alert을 띄우면 Jest에서 못 다루니 스파이로 대체 — 호출 여부/버튼 구성만 검증하고,
-// "확인" 버튼의 onPress를 직접 호출해서 사용자가 확인을 누른 상황을 흉내낸다.
+// 실제 Alert을 띄우면 Jest에서 못 다루니 스파이로 대체
+// 호출 여부/버튼 구성만 검증하고 "확인" 버튼의 onPress를 직접 호출해서 사용자가 확인을 누른 상황을 흉내낸다.
 jest.spyOn(Alert, 'alert').mockImplementation(() => {});
 const mockedAlert = Alert.alert as jest.Mock;
-// destructive.onPress()가 deleteMutation.mutate()(비동기)를 트리거하므로 반드시
-// await act(async () => ...)로 감싸야 함 — 동기 act(() => ...)로 감싸면 React의
-// act 추적이 이 비동기 작업을 놓쳐서, 정작 실패는 엉뚱하게 "다음" 테스트의 초기
-// 렌더(useQuery의 최초 fetch)가 이유 없이 멈추는 형태로 나타나는 걸 직접 겪었음.
+
+/**
+ * destructive.onPress()가 deleteMutation.mutate()(비동기)를 트리거하므로
+ * 반드시 await act(async () => ...)로 감싸야 함
+ * 동기 act(() => ...)로 감싸면 React의 act 추적이 이 비동기 작업을 놓쳐서,
+ * 정작 실패는 엉뚱하게 "다음" 테스트의 초기 렌더(useQuery의 최초 fetch)가 이유 없이 멈추는 형태로 나타님
+ */
 const pressDestructiveAlertButton = async () => {
   const buttons = mockedAlert.mock.calls[mockedAlert.mock.calls.length - 1][2];
   const destructive = buttons.find(
@@ -50,7 +55,7 @@ const renderDetailScreen = () => {
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <ReceiptDetailScreen />
+      <ReceiptDetailScreen navigation={mockNavigation} />
     </QueryClientProvider>,
   );
 };
@@ -75,10 +80,6 @@ const FIXTURE: Receipt = {
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockedUseNavigation.mockReturnValue({
-    goBack: mockGoBack,
-    navigate: mockNavigate,
-  });
   mockedUseRoute.mockReturnValue({ params: { receiptId: '1' } });
   server.use(
     http.get('*/receipts/:id', ({ params }) => {
@@ -225,7 +226,7 @@ test('Alert에서 확인하면 삭제 API를 호출하고, 성공하면 뒤로�
 
   const { unmount } = await render(
     <QueryClientProvider client={queryClient}>
-      <ReceiptDetailScreen />
+      <ReceiptDetailScreen navigation={mockNavigation} />
     </QueryClientProvider>,
   );
   await waitFor(() => {
@@ -244,15 +245,15 @@ test('Alert에서 확인하면 삭제 API를 호출하고, 성공하면 뒤로�
 
 test('삭제가 진행되는 동안 버튼이 비활성화되고 로딩 인디케이터를 보여준다', async () => {
   // 진짜로 영원히 안 끝나는 Promise를 쓰면 요청이 테스트가 끝난 뒤에도 msw에 걸린 채로
-  // 남아서 다음 테스트로 새어나간다(ConfirmScreen.test.tsx와 같은 이유로 resolver를
-  // 붙잡아뒀다가 단언이 끝나면 직접 resolve).
+  // 남아서 다음 테스트로 새어나간다(resolver를 붙잡아뒀다가 단언이 끝나면 직접 resolve).
   let resolveDelete: () => void = () => {};
   server.use(
     http.delete(
       '*/receipts/:id',
       () =>
         new Promise<Response>(resolve => {
-          resolveDelete = () => resolve(new HttpResponse(null, { status: 204 }));
+          resolveDelete = () =>
+            resolve(new HttpResponse(null, { status: 204 }));
         }),
     ),
   );
@@ -277,8 +278,8 @@ test('삭제가 진행되는 동안 버튼이 비활성화되고 로딩 인디�
   await waitFor(() => {
     expect(mockGoBack).toHaveBeenCalled();
   });
-  // goBack이 목이라 실제로는 화면이 unmount되지 않으므로, 실제 네비게이션이었다면
-  // 일어났을 unmount를 직접 흉내내서 정리.
+  // goBack이 목이라 실제로는 화면이 unmount되지 않으므로
+  // 실제 네비게이션이었다면 일어났을 unmount를 직접 흉내내서 정리.
   unmount();
 });
 

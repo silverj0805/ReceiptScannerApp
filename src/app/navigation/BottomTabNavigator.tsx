@@ -2,9 +2,9 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useResolveClassNames } from 'uniwind';
 
+import WriteRedirectScreen from '@/features/confirm/screens/WriteRedirectScreen';
 import HomeScreen from '@/features/receipt/screens/home';
-import ReceiptListScreen from '@/features/receipt/screens/ReceiptListScreen';
-import WriteRedirectScreen from '@/features/receipt/screens/WriteRedirectScreen';
+import ReceiptListScreen from '@/features/receipt/screens/list';
 import ScanScreen from '@/features/scan/screens/ScanScreen';
 import SettingsRedirectScreen from '@/features/settings/screens/settings/SettingsRedirectScreen';
 
