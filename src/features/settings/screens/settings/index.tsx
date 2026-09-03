@@ -8,18 +8,42 @@ import Icon from '@/shared/components/Icon';
 
 import { PRIVACY_POLICY_URL, TERMS_OF_SERVICE_URL } from '../../constants/urls';
 
+function SettingsRow({
+  testID,
+  label,
+  onPress,
+}: {
+  testID: string;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      testID={testID}
+      onPress={onPress}
+      className="flex-row items-center justify-between border-b border-[#e8e6e1] py-4"
+    >
+      <Text className="text-sm font-semibold text-black">{label}</Text>
+      <Icon name="chevron-forward" size={18} colorClassName="accent-gray" />
+    </Pressable>
+  );
+}
+
 function SettingsScreen({
   navigation,
 }: {
   navigation: NativeStackNavigationProp<StackParamList>;
 }) {
   const goBack = () => navigation.goBack();
+
   const goToLicense = () => navigation.navigate('License');
+
   const goToPrivacyPolicy = () =>
     navigation.navigate('WebView', {
       url: PRIVACY_POLICY_URL,
       title: '개인정보처리방침',
     });
+
   const goToTermsOfService = () =>
     navigation.navigate('WebView', {
       url: TERMS_OF_SERVICE_URL,
@@ -41,36 +65,21 @@ function SettingsScreen({
       </View>
 
       <ScrollView contentContainerClassName="px-5">
-        <Pressable
+        <SettingsRow
           testID="settings-privacy-policy-row"
+          label="개인정보처리방침"
           onPress={goToPrivacyPolicy}
-          className="flex-row items-center justify-between border-b border-[#e8e6e1] py-4"
-        >
-          <Text className="text-sm font-semibold text-black">
-            개인정보처리방침
-          </Text>
-          <Icon name="chevron-forward" size={18} colorClassName="accent-gray" />
-        </Pressable>
-
-        <Pressable
+        />
+        <SettingsRow
           testID="settings-terms-of-service-row"
+          label="이용약관"
           onPress={goToTermsOfService}
-          className="flex-row items-center justify-between border-b border-[#e8e6e1] py-4"
-        >
-          <Text className="text-sm font-semibold text-black">이용약관</Text>
-          <Icon name="chevron-forward" size={18} colorClassName="accent-gray" />
-        </Pressable>
-
-        <Pressable
+        />
+        <SettingsRow
           testID="settings-license-row"
+          label="오픈소스 라이센스"
           onPress={goToLicense}
-          className="flex-row items-center justify-between border-b border-[#e8e6e1] py-4"
-        >
-          <Text className="text-sm font-semibold text-black">
-            오픈소스 라이센스
-          </Text>
-          <Icon name="chevron-forward" size={18} colorClassName="accent-gray" />
-        </Pressable>
+        />
 
         <View className="flex-row items-center justify-between py-4">
           <Text className="text-sm font-semibold text-gray">앱 버전</Text>
