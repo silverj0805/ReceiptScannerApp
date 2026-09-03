@@ -18,7 +18,7 @@ function SummaryCard({
   byCategory,
 }: SummaryCardProps) {
   return (
-    <Box className="w-full gap-3.5">
+    <Box className="w-full gap-3.5 border-primary">
       <View className="gap-2">
         <Text className="font-bold text-gray">이번 달 지출 💸</Text>
 
