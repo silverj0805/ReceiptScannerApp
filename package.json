@@ -12,7 +12,8 @@
     "test": "jest",
     "apk:debug": "cd android && ./gradlew assembleDebug && cd ..",
     "apk:release": "cd android && ./gradlew assembleRelease && cd ..",
-    "generate:licenses": "node scripts/generateLicenseData.js"
+    "generate:licenses": "node scripts/generateLicenseData.js",
+    "prepare": "husky"
   },
   "dependencies": {
     "@hookform/error-message": "^2.0.1",
@@ -57,6 +58,8 @@
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.3",
     "@babel/runtime": "^7.25.0",
+    "@commitlint/cli": "^21.2.2",
+    "@commitlint/config-conventional": "^21.2.2",
     "@react-native-community/cli": "20.2.0",
     "@react-native-community/cli-platform-android": "20.2.0",
     "@react-native-community/cli-platform-ios": "20.2.0",
@@ -72,7 +75,9 @@
     "eslint": "^8.19.0",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import": "^2.32.0",
+    "husky": "^9.1.7",
     "jest": "^29.6.3",
+    "lint-staged": "^16.2.4",
     "msw": "^2.15.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
