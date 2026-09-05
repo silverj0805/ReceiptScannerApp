@@ -119,7 +119,7 @@ function HomeScreen({ navigation }: { navigation: HomeNavigation }) {
       <FlatList
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
-        contentContainerClassName="bg-background grow py-4 px-5 pb-10"
+        contentContainerClassName="grow bg-background px-5 py-4 pb-10"
         ListHeaderComponentClassName="pb-5"
         data={rows}
         keyExtractor={keyExtractor}

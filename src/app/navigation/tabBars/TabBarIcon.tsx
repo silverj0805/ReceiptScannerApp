@@ -3,10 +3,7 @@ import { Text } from 'react-native';
 import Icon from '@/shared/components/Icon';
 
 type TabIconName =
-  | 'home-outline'
-  | 'receipt-outline'
-  | 'create-outline'
-  | 'settings-outline';
+  'home-outline' | 'receipt-outline' | 'create-outline' | 'settings-outline';
 type TabBarIconProps = {
   name: TabIconName;
   focused: boolean;

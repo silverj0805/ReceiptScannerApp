@@ -60,7 +60,7 @@ function LicenseScreen({
                 />
               )}
             </Pressable>
-            <Text className="text-xs text-gray font-semibold">
+            <Text className="text-xs font-semibold text-gray">
               {item.licenseName}
             </Text>
           </View>
